@@ -34,8 +34,8 @@ export async function startOAuth(id) {
   const on = await enabledProviders();
   if (!on[id]) return t("oauthOff", { p: p.name });
   // Come back to the page the user was on once the provider sends them back.
-  try { sessionStorage.setItem(BACK_KEY, location.hash); } catch (e) {}
-  const { error } = await sb.auth.signInWithOAuth({ provider: id, options: { redirectTo: location.origin + location.pathname } });
+  try { sessionStorage.setItem(BACK_KEY, location.pathname + location.search); } catch (e) {}
+  const { error } = await sb.auth.signInWithOAuth({ provider: id, options: { redirectTo: location.origin + "/" } });
   if (error) return t("oauthErr", { p: p.name });
 }
 
@@ -43,5 +43,5 @@ export async function startOAuth(id) {
 export function restoreOAuthRoute(signedIn) {
   let back = null;
   try { back = sessionStorage.getItem(BACK_KEY); sessionStorage.removeItem(BACK_KEY); } catch (e) {}
-  if (signedIn && back && back !== location.hash) history.replaceState(null, "", location.pathname + location.search + back);
+  if (signedIn && back && back !== location.pathname + location.search) history.replaceState(null, "", back);
 }

@@ -1,4 +1,4 @@
-import { html, raw, icon, logo, $, $$, toast, openDialog, closeDialog, dlgHead, thumb, typeLabel, TYPES, fitOf, fitPill, scoreLabel, savePerPage } from "./ui.js";
+import { html, raw, icon, logo, $, $$, toast, openDialog, closeDialog, dlgHead, thumb, typeLabel, TYPES, fitOf, fitPill, scoreLabel, savePerPage, reviewed } from "./ui.js";
 import { t, getLang, setLang, langName, LANGS } from "./i18n.js";
 import { sb, state, boot, onChange, emit, isAdmin, saveSetup, published, packById, toggleBookmark, likeInfo, toggleLike, loadComments, recordView, recordDownload, loadCatalog } from "./store.js";
 import * as V from "./views.js";
@@ -11,12 +11,34 @@ let adminMod = null; // loaded on demand
 const pagesCache = new Map();
 
 // ---------- Routing ----------
+// Real paths (/pack/slug) so every page is its own crawlable URL; history API, no hashes.
 function parse() {
-  const h = location.hash.replace(/^#/, "") || "/";
-  const [path, qs] = h.split("?");
-  return { parts: path.split("/").filter(Boolean), q: new URLSearchParams(qs || ""), path };
+  const path = location.pathname.replace(/\/index\.html$/, "/").replace(/(.)\/$/, "$1") || "/";
+  return { parts: path.split("/").filter(Boolean).map(decodeURIComponent), q: new URLSearchParams(location.search), path };
 }
-const go = (h) => { if (location.hash !== h) location.hash = h; else render(); };
+function go(h, { replace = false } = {}) {
+  if (h === location.pathname + location.search) return render();
+  history[replace ? "replaceState" : "pushState"](null, "", h);
+  onRoute();
+}
+function onRoute() {
+  $(".drawer") && ($(".drawer").hidden = true);
+  closeDialog();
+  render().then(() => { scrollTo(0, 0); $("#main").focus({ preventScroll: true }); });
+}
+// Pages only the signed-in user or a live API lookup can show stay out of search results.
+const NOINDEX = new Set(["search", "modrinth", "saved", "account", "admin"]);
+function setRobots(noindex) {
+  let m = document.querySelector('meta[name="robots"]');
+  if (!noindex) return m?.remove();
+  if (!m) { m = document.createElement("meta"); m.name = "robots"; document.head.append(m); }
+  m.content = "noindex";
+}
+function setCanonical(path) {
+  let l = document.querySelector('link[rel="canonical"]');
+  if (!l) { l = document.createElement("link"); l.rel = "canonical"; document.head.append(l); }
+  l.href = location.origin + path;
+}
 
 async function render() {
   const main = $("#main");
@@ -44,6 +66,14 @@ async function render() {
 
   main.innerHTML = String(view.body);
   document.title = view.title ? `${view.title} · Nyxie` : "Nyxie: Minecraft packs tested for your setup";
+  const { path } = parse();
+  // Same rules as scripts/build.mjs: only packs the team tested and reviewed are indexed;
+  // the rest are copies of the creator's listing.
+  setRobots(NOINDEX.has(a) || view.notFound || (view.pack && !reviewed(view.pack))
+    || (TYPES.includes(a) && !published().some((p) => p.type === a && reviewed(p)))
+    || (a === "top" && !published().some((p) => p.score != null && !p.is_sample))
+    || (a === "tutorials" && b && !state.tutorials.find((x) => x.slug === b)?.body?.trim()));
+  setCanonical(path);
   header();
   if (view.pack) mountDetail(view.pack);
   if (view.mount) view.mount(main);
@@ -60,23 +90,23 @@ function header() {
   const nav = [...TYPES.map((ty) => [ty, typeLabel(ty)]), ["top", t("top10")], ["tutorials", t("tutorials")], ["modrinth", "Modrinth"]];
   $("#top").innerHTML = String(html`
     <div class="top-in">
-      <a class="brand" href="#/" aria-label="Nyxie home">${logo()}<span>Nyxie</span></a>
-      <nav class="nav" aria-label="Main">${nav.filter(([k]) => !MORE.includes(k)).map(([k, l]) => html`<a href="#/${k}"${cur === k ? raw(' aria-current="page"') : ""}>${l}</a>`)}
+      <a class="brand" href="/" aria-label="Nyxie home">${logo()}<span>Nyxie</span></a>
+      <nav class="nav" aria-label="Main">${nav.filter(([k]) => !MORE.includes(k)).map(([k, l]) => html`<a href="/${k}"${cur === k ? raw(' aria-current="page"') : ""}>${l}</a>`)}
         <div class="menu-w nav-more"><button type="button" class="nav-more-b${MORE.includes(cur) ? " on" : ""}" data-act="navmore" aria-haspopup="menu" aria-expanded="false">${t("more")} ${icon("chevron")}</button>
-          <div class="menu" role="menu" hidden>${MORE.map((k) => html`<a role="menuitem" href="#/${k}"${cur === k ? raw(' aria-current="page"') : ""}>${typeLabel(k)}</a>`)}</div></div></nav>
+          <div class="menu" role="menu" hidden>${MORE.map((k) => html`<a role="menuitem" href="/${k}"${cur === k ? raw(' aria-current="page"') : ""}>${typeLabel(k)}</a>`)}</div></div></nav>
       <form class="hsearch" role="search" data-form="search" autocomplete="off">
         ${icon("search")}<input name="q" type="search" placeholder="${t("searchShort")}" aria-label="${t("searchBtn")}" aria-controls="hs-pop" aria-expanded="false" data-hsearch><kbd aria-hidden="true">/</kbd>
         <div class="hs-pop" id="hs-pop" role="listbox" hidden></div>
       </form>
       <div class="top-r">
-        <a class="ibtn msearch" href="#/search" aria-label="${t("searchBtn")}">${icon("search")}</a>
+        <a class="ibtn msearch" href="/search" aria-label="${t("searchBtn")}">${icon("search")}</a>
         <button type="button" class="setup-chip${state.setup ? " set" : ""}" data-act="setup" title="${t("setupTitle")}">${icon("cpu")}<span>${V.setupSummary()}</span></button>
         ${u ? html`<div class="menu-w"><button type="button" class="avatar-btn" data-act="usermenu" aria-haspopup="menu" aria-expanded="false" aria-label="${t("account")}">${pr?.avatar_url ? html`<img src="${pr.avatar_url}" alt="">` : (pr?.display_name || u.email || "?").slice(0, 1).toUpperCase()}</button>
               <div class="menu" role="menu" hidden>
                 <p class="menu-h"><b>${pr?.display_name || ""}</b><small>${u.email}</small></p>
-                <a role="menuitem" href="#/saved">${icon("bookmark")} ${t("saved")}</a>
-                <a role="menuitem" href="#/account">${icon("user")} ${t("account")}</a>
-                ${isAdmin() ? html`<a role="menuitem" href="#/admin">${icon("shield")} ${t("admin")}</a>` : ""}
+                <a role="menuitem" href="/saved">${icon("bookmark")} ${t("saved")}</a>
+                <a role="menuitem" href="/account">${icon("user")} ${t("account")}</a>
+                ${isAdmin() ? html`<a role="menuitem" href="/admin">${icon("shield")} ${t("admin")}</a>` : ""}
                 <button type="button" role="menuitem" data-act="signout">${t("signOut")}</button>
               </div></div>`
             : html`<button type="button" class="btn btn-sec btn-sm" data-act="signin">${t("signIn")}</button>`}
@@ -84,7 +114,7 @@ function header() {
       </div>
     </div>
     <div class="drawer" hidden>
-      <nav aria-label="Main">${nav.map(([k, l]) => html`<a href="#/${k}"${cur === k ? raw(' aria-current="page"') : ""}>${l}</a>`)}</nav>
+      <nav aria-label="Main">${nav.map(([k, l]) => html`<a href="/${k}"${cur === k ? raw(' aria-current="page"') : ""}>${l}</a>`)}</nav>
       <div class="row-btns"><button type="button" class="btn btn-sec btn-sm" data-act="lang">${icon("globe")} ${langName()}</button><button type="button" class="btn btn-sec btn-sm" data-act="theme">${themeIcon()} ${themeLabel()}</button></div>
     </div>`);
 }
@@ -94,11 +124,11 @@ const themeLabel = () => document.documentElement.dataset.theme === "dark" ? t("
 function footer() {
   const col = (title, links) => html`<div><h2>${title}</h2><ul>${links.map(([h, l]) => html`<li><a href="${h}">${l}</a></li>`)}</ul></div>`;
   $("#foot").innerHTML = String(html`<div class="foot-in">
-    <div class="foot-brand"><a class="brand" href="#/">${logo()}<span>Nyxie</span></a><p>${t("footTag")}</p>
+    <div class="foot-brand"><a class="brand" href="/">${logo()}<span>Nyxie</span></a><p>${t("footTag")}</p>
       <ul class="socials">${SOCIALS.map(([n, u]) => html`<li><a href="${u}" target="_blank" rel="noopener">${n}</a></li>`)}</ul></div>
-    ${col(t("browse"), [...TYPES.map((ty) => ["#/" + ty, typeLabel(ty)]), ["#/top", t("top10")], ["#/tutorials", t("tutorials")]])}
-    ${col("Nyxie", [["#/p/about", t("page.about")], ["#/p/contact", t("page.contact")], ["#/p/download-safety", t("page.download-safety")], ["mailto:" + CONTACT_EMAIL, CONTACT_EMAIL]])}
-    ${col(t("legal"), [["#/p/terms", t("page.terms")], ["#/p/privacy", t("page.privacy")], ["#/p/cookies", t("page.cookies")]])}
+    ${col(t("browse"), [...TYPES.map((ty) => ["/" + ty, typeLabel(ty)]), ["/top", t("top10")], ["/tutorials", t("tutorials")]])}
+    ${col("Nyxie", [["/p/about", t("page.about")], ["/p/contact", t("page.contact")], ["/p/download-safety", t("page.download-safety")], ["mailto:" + CONTACT_EMAIL, CONTACT_EMAIL]])}
+    ${col(t("legal"), [["/p/terms", t("page.terms")], ["/p/privacy", t("page.privacy")], ["/p/cookies", t("page.cookies")]])}
     <div class="foot-set"><button type="button" class="btn btn-sec btn-sm" data-act="lang">${icon("globe")} ${langName()}</button><button type="button" class="btn btn-sec btn-sm" data-act="theme">${themeIcon()} ${themeLabel()}</button></div>
   </div><p class="foot-legal">© 2026 Nyxie · ${t("disclaimer")}</p>`);
 }
@@ -181,12 +211,12 @@ function hsRender(input) {
   const pop = input.form.querySelector(".hs-pop"), q = input.value.trim();
   if (!q) { pop.hidden = true; input.setAttribute("aria-expanded", "false"); return; }
   const { packs, tuts } = V.searchItems(q);
-  const items = [...packs.slice(0, 6).map((p) => ({ h: "#/pack/" + p.slug, p })), ...tuts.slice(0, 2).map((x) => ({ h: "#/tutorials/" + x.slug, x }))];
+  const items = [...packs.slice(0, 6).map((p) => ({ h: "/pack/" + p.slug, p })), ...tuts.slice(0, 2).map((x) => ({ h: "/tutorials/" + x.slug, x }))];
   hsIdx = -1;
   pop.innerHTML = String(html`${items.map((it, i) => it.p
       ? html`<a role="option" id="hs-${i}" href="${it.h}" class="hs-i"><img src="${thumb(it.p)}" alt="" width="36" height="36"><span><b>${it.p.name}</b><small>${typeLabel(it.p.type)} · ${it.p.creator}</small></span>${fitPill(fitOf(it.p, state.setup))}<em>${scoreLabel(it.p.score)}</em></a>`
       : html`<a role="option" id="hs-${i}" href="${it.h}" class="hs-i">${icon("book")}<span><b>${it.x.title}</b><small>${t("tutorials")}</small></span></a>`)}
-    <a class="hs-all" href="#/search?q=${encodeURIComponent(q)}">${icon("search")} ${t("searchAll", { q })}</a>`);
+    <a class="hs-all" href="/search?q=${encodeURIComponent(q)}">${icon("search")} ${t("searchAll", { q })}</a>`);
   pop.hidden = false; input.setAttribute("aria-expanded", "true");
 }
 const hsClose = () => $$(".hs-pop").forEach((p) => { p.hidden = true; p.closest("form").querySelector("input").setAttribute("aria-expanded", "false"); });
@@ -238,7 +268,7 @@ document.addEventListener("click", async (ev) => {
       if (msg) { el.classList.remove("busy"); el.disabled = false; if (e) { e.textContent = msg; e.hidden = false; } else toast(msg, "bad"); }
       break;
     }
-    case "signout": await sb.auth.signOut(); toast(t("signedOut")); go("#/"); break;
+    case "signout": await sb.auth.signOut(); toast(t("signedOut")); go("/"); break;
     case "theme": {
       const n = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
       document.documentElement.dataset.theme = n; try { localStorage.setItem("nyxie.theme", n); } catch (e) {}
@@ -333,7 +363,7 @@ document.addEventListener("keydown", (ev) => {
     ev.preventDefault(); hsIdx = (hsIdx + (ev.key === "ArrowDown" ? 1 : -1) + opts.length) % opts.length;
     opts.forEach((o, i) => o.classList.toggle("act", i === hsIdx)); inp.setAttribute("aria-activedescendant", opts[hsIdx].id || "");
   }
-  if (inp && ev.key === "Enter" && hsIdx >= 0) { const o = $$(".hs-pop:not([hidden]) a")[hsIdx]; if (o) { ev.preventDefault(); location.hash = o.getAttribute("href"); inp.blur(); hsClose(); } }
+  if (inp && ev.key === "Enter" && hsIdx >= 0) { const o = $$(".hs-pop:not([hidden]) a")[hsIdx]; if (o) { ev.preventDefault(); go(o.getAttribute("href")); inp.blur(); hsClose(); } }
 });
 
 document.addEventListener("submit", async (ev) => {
@@ -344,7 +374,7 @@ document.addEventListener("submit", async (ev) => {
   const err = (m) => { const e = f.querySelector(".form-err"); if (e) { e.textContent = m; e.hidden = false; } else toast(m, "bad"); };
   try {
     busy(true);
-    if (kind === "search") { const q = String(fd.get("q") || "").trim(); hsClose(); f.querySelector("input").blur(); go("#/search" + (q ? "?q=" + encodeURIComponent(q) : "")); }
+    if (kind === "search") { const q = String(fd.get("q") || "").trim(); hsClose(); f.querySelector("input").blur(); go("/search" + (q ? "?q=" + encodeURIComponent(q) : "")); }
     else if (kind === "setup") { await saveSetup({ edition: fd.get("edition"), version: fd.get("version"), pc: fd.get("pc") }); closeDialog(); toast(t("saved_")); }
     else if (kind === "auth") {
       const mode = f.dataset.mode, email = String(fd.get("email")).trim(), pw = String(fd.get("pw") || "");
@@ -353,12 +383,12 @@ document.addEventListener("submit", async (ev) => {
         if (error) return err(error.message.includes("Email not confirmed") ? t("checkEmail") : t("errAuth"));
         closeDialog(); toast(t("welcome", { n: email.split("@")[0] }));
       } else if (mode === "up") {
-        const { data, error } = await sb.auth.signUp({ email, password: pw, options: { data: { display_name: String(fd.get("name")).trim() }, emailRedirectTo: location.origin + location.pathname } });
+        const { data, error } = await sb.auth.signUp({ email, password: pw, options: { data: { display_name: String(fd.get("name")).trim() }, emailRedirectTo: location.origin + "/" } });
         if (error) return err(error.message);
         if (!data.session) openDialog(html`${dlgHead(t("signUp"))}<p>${t("checkEmail")}</p><div class="dlg-f"><button type="button" class="btn btn-pri" data-act="close-dlg">OK</button></div>`);
         else closeDialog();
       } else {
-        const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname + "#/account" });
+        const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + "/account" });
         if (error) return err(error.message);
         closeDialog(); toast(t("resetSent"));
       }
@@ -396,7 +426,18 @@ document.addEventListener("submit", async (ev) => {
 $("#dlg").addEventListener("click", (ev) => { if (ev.target === ev.currentTarget) closeDialog(); }); // backdrop click
 
 // ---------- Start ----------
-window.addEventListener("hashchange", () => { $(".drawer") && ($(".drawer").hidden = true); closeDialog(); render().then(() => { scrollTo(0, 0); $("#main").focus({ preventScroll: true }); }); });
+window.addEventListener("popstate", onRoute);
+window.addEventListener("nyxie:route", onRoute); // admin.js navigates and refreshes through this
+// Same-site links navigate in place; new tabs, downloads, modified clicks and other origins behave normally.
+document.addEventListener("click", (ev) => {
+  if (ev.defaultPrevented || ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+  const a = ev.target.closest?.("a[href]");
+  if (!a || a.target || a.hasAttribute("download") || !a.getAttribute("href").startsWith("/")) return;
+  const u = new URL(a.href, location.href);
+  if (u.origin !== location.origin) return;
+  ev.preventDefault();
+  go(u.pathname + u.search);
+});
 onChange(() => { footer(); render(); });
 
 (async () => {

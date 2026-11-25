@@ -37,6 +37,7 @@ const S = {
     download: "ดาวน์โหลด", downloads: "ดาวน์โหลด", score: "คะแนน Nyxie", views: "เข้าชม",
     // detail
     back: "กลับ", like: "ถูกใจ", liked: "ถูกใจแล้ว", bookmark: "บันทึก", bookmarked: "บันทึกแล้ว", report: "แจ้งปัญหา",
+    "rv.title": "รีวิวจากทีม Nyxie", "rv.pros": "ข้อดี", "rv.cons": "ข้อเสีย", "rv.rig": "เครื่องที่ทดสอบ", "rv.setup": "เวอร์ชันและการตั้งค่า", "rv.fps": "FPS ก่อน → หลัง", "rv.fromCreator": "รายละเอียดจากผู้สร้าง",
     testFacts: "ข้อมูลการทดสอบ", checked: "ตรวจล่าสุด", versions: "เวอร์ชัน", requirements: "สิ่งที่ต้องมี", license: "สิทธิ์การใช้งาน", fileSize: "ขนาดไฟล์", creator: "ผู้สร้าง",
     description: "รายละเอียด", install: "วิธีติดตั้ง", gallery: "ภาพตัวอย่าง", compare: "เทียบก่อน / หลัง", before: "ก่อน", after: "หลัง",
     noDesc: "ยังไม่มีรายละเอียด", brokenLink: "ลิงก์นี้ถูกแจ้งว่าเสีย ทีมกำลังตรวจสอบ", noLink: "ยังไม่มีลิงก์ดาวน์โหลด (ข้อมูลตัวอย่าง)",
@@ -116,6 +117,7 @@ const S = {
     by: "by {c}", sample: "Sample", sampleTip: "Sample data, not a real review yet",
     download: "Download", downloads: "downloads", score: "Nyxie score", views: "views",
     back: "Back", like: "Like", liked: "Liked", bookmark: "Save", bookmarked: "Saved", report: "Report a problem",
+    "rv.title": "Nyxie team review", "rv.pros": "Pros", "rv.cons": "Cons", "rv.rig": "Test PC", "rv.setup": "Version and settings", "rv.fps": "FPS without → with", "rv.fromCreator": "From the creator",
     testFacts: "Test facts", checked: "Last checked", versions: "Versions", requirements: "Requirements", license: "License", fileSize: "File size", creator: "Creator",
     description: "Description", install: "How to install", gallery: "Screenshots", compare: "Before / after", before: "Before", after: "After",
     noDesc: "No description yet.", brokenLink: "This link was reported broken. The team is checking it.", noLink: "No download link yet (sample data).",

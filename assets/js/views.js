@@ -1,10 +1,10 @@
-import { html, raw, icon, thumb, fitOf, fitPill, scoreLabel, typeLabel, TYPES, md, esc, perPage, perPicker } from "./ui.js";
+import { html, raw, icon, thumb, fitOf, fitPill, scoreLabel, typeLabel, TYPES, md, esc, perPage, perPicker, reviewBlock } from "./ui.js";
 import { t, fmtDate, fmtDay, fmtNum, timeAgo, langName } from "./i18n.js";
 import { state, published, packBySlug, isAdmin } from "./store.js";
 import { modrinthRef } from "./mrviews.js";
 
 // ---------- Shared pieces ----------
-const href = (p) => `#/pack/${p.slug}`;
+const href = (p) => `/pack/${p.slug}`;
 export const tags = (p, max = 4) => {
   const a = [...(p.versions || []).slice(0, 2), p.platform === "both" ? t("plat.both") : t("ed." + p.platform)];
   if (p.resolution) a.push(p.resolution);
@@ -78,13 +78,13 @@ export function home() {
       </aside>
     </section>
     <nav class="types" aria-label="${t("browse")}">
-      ${TYPES.map((ty) => html`<a class="type-l" href="#/${ty}"><span>${typeLabel(ty)}</span><small>${t("packsN", { n: counts[ty] })}</small></a>`)}
+      ${TYPES.map((ty) => html`<a class="type-l" href="/${ty}"><span>${typeLabel(ty)}</span><small>${t("packsN", { n: counts[ty] })}</small></a>`)}
     </nav>
-    <section class="sec">${sectionHead(s ? t("bestForYou") : t("topRated"), s ? "#/resource-packs?fit=1" : "#/top")}${best.length ? rows(best) : empty(t("noResults"), t("noResultsP"))}</section>
+    <section class="sec">${sectionHead(s ? t("bestForYou") : t("topRated"), s ? "/resource-packs?fit=1" : "/top")}${best.length ? rows(best) : empty(t("noResults"), t("noResultsP"))}</section>
     <div class="split">
-      <section class="sec">${sectionHead(t("recentlyChecked"), "#/resource-packs?sort=checked")}${rows(recent)}</section>
-      <section class="sec">${sectionHead(t("tutorials"), "#/tutorials")}
-        <ul class="tut-list">${state.tutorials.filter((x) => x.published).slice(0, 5).map((x) => html`<li><a href="#/tutorials/${x.slug}">${icon("book")}<span><b>${x.title}</b><small>${x.summary}</small></span></a></li>`)}</ul>
+      <section class="sec">${sectionHead(t("recentlyChecked"), "/resource-packs?sort=checked")}${rows(recent)}</section>
+      <section class="sec">${sectionHead(t("tutorials"), "/tutorials")}
+        <ul class="tut-list">${state.tutorials.filter((x) => x.published).slice(0, 5).map((x) => html`<li><a href="/tutorials/${x.slug}">${icon("book")}<span><b>${x.title}</b><small>${x.summary}</small></span></a></li>`)}</ul>
       </section>
     </div>`,
   };
@@ -177,7 +177,7 @@ export function detail(slug) {
   return {
     title: p.name,
     body: html`
-    <nav class="crumbs" aria-label="breadcrumb"><a href="#/${p.type}">${icon("left")} ${typeLabel(p.type)}</a></nav>
+    <nav class="crumbs" aria-label="breadcrumb"><a href="/${p.type}">${icon("left")} ${typeLabel(p.type)}</a></nav>
     <header class="det-h">
       <img class="det-th" src="${thumb(p)}" alt="" width="120" height="120">
       <div class="det-id">
@@ -199,12 +199,13 @@ export function detail(slug) {
     ${p.link_broken ? html`<p class="note note-warn">${icon("alert")} ${t("brokenLink")}</p>` : ""}
     <div class="det-grid">
       <div class="det-main">
+        ${reviewBlock(p)}
         ${p.before_url && p.after_url ? html`<section class="panel"><h2>${t("compare")}</h2>
           <div class="ba" style="--p:50%"><img src="${p.before_url}" alt="${t("before")}"><img class="ba-after" src="${p.after_url}" alt="${t("after")}"><input type="range" min="0" max="100" value="50" data-act="ba" aria-label="${t("compare")}"><span class="ba-l">${t("before")}</span><span class="ba-r">${t("after")}</span></div></section>` : ""}
         ${imgs.length ? html`<section class="panel"><h2>${t("gallery")}</h2><div class="gal" data-name="${p.name}">${imgs.map((u, i) => html`<a href="${u}" target="_blank" rel="noopener" data-lbi><img src="${u}" alt="${p.name} ${i + 1}" loading="lazy"></a>`)}</div></section>` : ""}
         ${modrinthRef(p) ? html`<section class="panel" id="mr-versions" aria-live="polite"><h2>${t("mr.files")}</h2><div class="boot"><span class="spin" aria-hidden="true"></span></div></section>` : ""}
         <section class="panel"><h2>${t("testFacts")}</h2><dl class="facts facts-2">${facts.map(([k, v]) => html`<div><dt>${k}</dt><dd>${v}</dd></div>`)}</dl></section>
-        ${p.description ? html`<section class="panel prose"><h2>${t("description")}</h2>${md(p.description)}</section>` : ""}
+        ${p.description ? html`<section class="panel prose"><h2>${String(p.review || "").trim() ? t("rv.fromCreator") : t("description")}</h2>${md(p.description)}</section>` : ""}
         ${p.install_steps ? html`<section class="panel prose"><h2>${t("install")}</h2>${md(p.install_steps)}</section>` : ""}
         <section class="panel" id="comments" aria-live="polite"><h2>${t("comments")}</h2><div class="boot"><span class="spin" aria-hidden="true"></span></div></section>
       </div>
@@ -218,7 +219,7 @@ export function detail(slug) {
           ${f ? html`${fitPill(f, true)}<p>${f.why}</p><button type="button" class="lnk" data-act="setup">${setupSummary()} · ${t("setupEdit")}</button>`
               : html`<p class="muted">${t("setupLead")}</p><button type="button" class="btn btn-sec btn-sm" data-act="setup">${icon("cpu")} ${t("setupSet")}</button>`}
         </section>
-        ${isAdmin() ? html`<a class="btn btn-sec" href="#/admin/packs/${p.id}">${icon("edit")} ${t("edit")}</a>` : ""}
+        ${isAdmin() ? html`<a class="btn btn-sec" href="/admin/packs/${p.id}">${icon("edit")} ${t("edit")}</a>` : ""}
       </aside>
     </div>`,
     pack: p,
@@ -272,7 +273,7 @@ export function search(q) {
     ${!q ? empty(t("typeQuery"), t("searchEmptyP"))
       : !packs.length && !tuts.length ? empty(t("searchEmpty", { q }), t("searchEmptyP"))
       : html`${groups.map(([ty, a]) => html`<section class="sec">${sectionHead(`${typeLabel(ty)} · ${a.length}`)}${rows(a)}</section>`)}
-        ${tuts.length ? html`<section class="sec">${sectionHead(`${t("tutorials")} · ${tuts.length}`)}<ul class="tut-list">${tuts.map((x) => html`<li><a href="#/tutorials/${x.slug}">${icon("book")}<span><b>${x.title}</b><small>${x.summary}</small></span></a></li>`)}</ul></section>` : ""}`}`,
+        ${tuts.length ? html`<section class="sec">${sectionHead(`${t("tutorials")} · ${tuts.length}`)}<ul class="tut-list">${tuts.map((x) => html`<li><a href="/tutorials/${x.slug}">${icon("book")}<span><b>${x.title}</b><small>${x.summary}</small></span></a></li>`)}</ul></section>` : ""}`}`,
   };
 }
 
@@ -284,12 +285,12 @@ export function top10() {
 export function tutorials() {
   const a = state.tutorials.filter((x) => x.published || isAdmin());
   return { title: t("tutorialsT"), body: html`<div class="page-h"><div><h1>${t("tutorialsT")}</h1><p class="muted">${t("tutorialsP")}</p></div></div>
-    <ul class="tut-list tut-big">${a.map((x) => html`<li><a href="#/tutorials/${x.slug}">${icon("book")}<span><b>${x.title}</b><small>${x.summary}</small></span>${icon("right")}</a></li>`)}</ul>` };
+    <ul class="tut-list tut-big">${a.map((x) => html`<li><a href="/tutorials/${x.slug}">${icon("book")}<span><b>${x.title}</b><small>${x.summary}</small></span>${icon("right")}</a></li>`)}</ul>` };
 }
 export function tutorial(slug) {
   const x = state.tutorials.find((y) => y.slug === slug && (y.published || isAdmin()));
   if (!x) return notFound();
-  return { title: x.title, body: html`<nav class="crumbs"><a href="#/tutorials">${icon("left")} ${t("tutorials")}</a></nav>
+  return { title: x.title, body: html`<nav class="crumbs"><a href="/tutorials">${icon("left")} ${t("tutorials")}</a></nav>
     <article class="article prose"><h1>${x.title}</h1><p class="lead">${x.summary}</p>${x.body ? md(x.body) : html`<p class="muted">${t("pageEmpty")}</p>`}<p class="muted small">${fmtDate(x.updated_at)}</p></article>` };
 }
 export function saved() {
@@ -301,7 +302,7 @@ export function gate() {
   return { title: t("needSignIn"), body: html`<div class="empty">${icon("user", "empty-i")}<h3>${t("needSignIn")}</h3><button type="button" class="btn btn-pri" data-act="signin">${t("signIn")}</button></div>` };
 }
 export function notFound() {
-  return { title: t("notFound"), body: html`<div class="empty">${icon("search", "empty-i")}<h3>${t("notFound")}</h3><p>${t("notFoundP")}</p><a class="btn btn-sec" href="#/">${t("home")}</a></div>` };
+  return { notFound: true, title: t("notFound"), body: html`<div class="empty">${icon("search", "empty-i")}<h3>${t("notFound")}</h3><p>${t("notFoundP")}</p><a class="btn btn-sec" href="/">${t("home")}</a></div>` };
 }
 export function infoPage(slug, page) {
   const title = page?.title || t("page." + slug);

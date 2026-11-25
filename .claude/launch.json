@@ -6,6 +6,13 @@
       "runtimeExecutable": "node",
       "runtimeArgs": [".claude/serve.js"],
       "port": 5173
+    },
+    {
+      "name": "nyxie-5174",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [".claude/serve.js"],
+      "env": { "PORT": "5174" },
+      "port": 5174
     }
   ]
 }

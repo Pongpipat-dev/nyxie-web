@@ -129,6 +129,27 @@ export const dlgHead = (title) => html`<div class="dlg-h"><h2>${title}</h2><butt
 
 export const scoreLabel = (s) => (s == null ? "—" : (+s).toFixed(1));
 export const typeLabel = (type) => t("type." + type);
+
+// A pack counts as reviewed once the team has tested it (score or test date) and written its own
+// review. Only reviewed packs are indexed: the rest are copies of the creator's listing.
+export const reviewed = (p) => !p.is_sample && (p.score != null || !!p.checked_at) && !!String(p.review || "").trim();
+const hasReviewData = (p) => !!(String(p.review || "").trim() || p.pros?.length || p.cons?.length || p.test_rig || p.test_setup || p.fps_base != null || p.fps_with != null);
+export function fpsChange(p) {
+  if (p.fps_base == null || p.fps_with == null) return "";
+  const pct = p.fps_base ? Math.round(((p.fps_with - p.fps_base) / p.fps_base) * 100) : 0;
+  return `${p.fps_base} → ${p.fps_with} FPS (${pct > 0 ? "+" : pct < 0 ? "−" : "±"}${Math.abs(pct)}%)`;
+}
+export function reviewBlock(p) {
+  if (!hasReviewData(p)) return "";
+  const fps = fpsChange(p) || (p.fps_with != null ? `${p.fps_with} FPS` : "");
+  const facts = [[t("rv.rig"), p.test_rig], [t("rv.setup"), p.test_setup], [t("rv.fps"), fps]].filter(([, v]) => v);
+  const list = (cls, ic, title, items) => items?.length ? html`<div class="pc ${cls}"><h3>${icon(ic)} ${title}</h3><ul>${items.map((x) => html`<li>${x}</li>`)}</ul></div>` : "";
+  return html`<section class="panel review" id="review"><h2>${icon("shield")} ${t("rv.title")}</h2>
+    ${String(p.review || "").trim() ? html`<div class="prose">${md(p.review)}</div>` : ""}
+    ${p.pros?.length || p.cons?.length ? html`<div class="pcs">${list("pc-pro", "check", t("rv.pros"), p.pros)}${list("pc-con", "x", t("rv.cons"), p.cons)}</div>` : ""}
+    ${facts.length ? html`<dl class="facts facts-2 rv-facts">${facts.map(([k, v]) => html`<div><dt>${k}</dt><dd>${v}</dd></div>`)}</dl>` : ""}
+  </section>`;
+}
 // ---------- Results per page ----------
 // The choice is kept on the device so every list opens with it; a ?n= in the URL wins.
 export const PER_OPTIONS = [10, 20, 50];

@@ -16,24 +16,24 @@ const TABS = [
 ];
 const PAGE_SLUGS = ["about", "contact", "privacy", "cookies", "terms", "download-safety"];
 const slugify = (s) => String(s).toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/[\s_]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "item-" + Date.now();
-const go = (h) => { location.hash = h; };
+const go = (h) => { history.pushState(null, "", h); window.dispatchEvent(new Event("nyxie:route")); };
 
 // The pack list is split by type: /admin/packs/<type> lists one type, /admin/packs lists all.
 const isType = (s) => TYPES.includes(s);
 // Type a pack page belongs to: the list's type, or the edited pack's type, or ?type= on "new".
 function packTypeOf(sub) {
   if (isType(sub)) return sub;
-  if (sub === "new") { const q = new URLSearchParams(location.hash.split("?")[1] || "").get("type"); return isType(q) ? q : null; }
+  if (sub === "new") { const q = new URLSearchParams(location.search).get("type"); return isType(q) ? q : null; }
   return state.packs.find((x) => String(x.id) === String(sub))?.type || null;
 }
-const packsHref = (ty) => "#/admin/packs" + (ty ? "/" + ty : "");
+const packsHref = (ty) => "/admin/packs" + (ty ? "/" + ty : "");
 
 function shell(tab, body, counts = {}, sub) {
   const curType = tab === "packs" ? packTypeOf(sub) : null;
   const n = (ty) => state.packs.filter((p) => p.type === ty).length;
   return html`<div class="page-h"><h1>${icon("shield")} ${t("admin")}</h1></div>
   <div class="adm">
-    <nav class="adm-nav" aria-label="${t("admin")}">${TABS.map(([k, l, ic]) => html`<a href="#/admin/${k}"${tab === k && !curType ? raw(' aria-current="page"') : ""}>${icon(ic)}<span>${l()}</span>${counts[k] ? html`<b class="count-b">${counts[k]}</b>` : k === "packs" ? html`<small class="adm-n">${state.packs.length}</small>` : ""}</a>
+    <nav class="adm-nav" aria-label="${t("admin")}">${TABS.map(([k, l, ic]) => html`<a href="/admin/${k}"${tab === k && !curType ? raw(' aria-current="page"') : ""}>${icon(ic)}<span>${l()}</span>${counts[k] ? html`<b class="count-b">${counts[k]}</b>` : k === "packs" ? html`<small class="adm-n">${state.packs.length}</small>` : ""}</a>
       ${k === "packs" ? html`<div class="adm-sub">${TYPES.map((ty) => html`<a href="${packsHref(ty)}"${curType === ty ? raw(' aria-current="page"') : ""}><span>${typeLabel(ty)}</span><small class="adm-n">${n(ty)}</small></a>`)}</div>` : ""}`)}</nav>
     <section class="adm-main">${body}</section>
   </div>`;
@@ -84,20 +84,20 @@ async function dashboardTab(openReports) {
   const top = pub.slice().sort((a, b) => (b.downloads || 0) - (a.downloads || 0) || (b.views || 0) - (a.views || 0)).slice(0, 5);
 
   const todo = [
-    openReports && { href: "#/admin/reports", ic: "flag", bad: true, text: A(`รายงานปัญหาที่ยังไม่แก้ ${openReports} รายการ`, `${openReports} open report${openReports > 1 ? "s" : ""}`) },
-    ...packs.filter((p) => p.link_broken).map((p) => ({ href: `#/admin/packs/${p.id}`, ic: "alert", bad: true, text: A(`ลิงก์ดาวน์โหลดเสีย: ${p.name}`, `Broken download link: ${p.name}`) })),
-    ...packs.filter((p) => p.status === "draft").map((p) => ({ href: `#/admin/packs/${p.id}`, ic: "edit", text: A(`ฉบับร่างยังไม่เผยแพร่: ${p.name}`, `Unpublished draft: ${p.name}`) })),
-    ...pub.filter((p) => !p.source_url && !p.is_sample).map((p) => ({ href: `#/admin/packs/${p.id}`, ic: "download", text: A(`ยังไม่มีลิงก์ดาวน์โหลด: ${p.name}`, `No download link: ${p.name}`) })),
+    openReports && { href: "/admin/reports", ic: "flag", bad: true, text: A(`รายงานปัญหาที่ยังไม่แก้ ${openReports} รายการ`, `${openReports} open report${openReports > 1 ? "s" : ""}`) },
+    ...packs.filter((p) => p.link_broken).map((p) => ({ href: `/admin/packs/${p.id}`, ic: "alert", bad: true, text: A(`ลิงก์ดาวน์โหลดเสีย: ${p.name}`, `Broken download link: ${p.name}`) })),
+    ...packs.filter((p) => p.status === "draft").map((p) => ({ href: `/admin/packs/${p.id}`, ic: "edit", text: A(`ฉบับร่างยังไม่เผยแพร่: ${p.name}`, `Unpublished draft: ${p.name}`) })),
+    ...pub.filter((p) => !p.source_url && !p.is_sample).map((p) => ({ href: `/admin/packs/${p.id}`, ic: "download", text: A(`ยังไม่มีลิงก์ดาวน์โหลด: ${p.name}`, `No download link: ${p.name}`) })),
   ].filter(Boolean);
 
   return html`<div class="adm-h"><h2>${A("แดชบอร์ด", "Dashboard")}</h2></div>
   <div class="kpis">
-    ${tile(A("แพ็กที่เผยแพร่", "Published packs"), pub.length, A(`ฉบับร่าง ${packs.length - pub.length}`, `${packs.length - pub.length} draft${packs.length - pub.length === 1 ? "" : "s"}`), "#/admin/packs")}
-    ${tile(A("ดาวน์โหลดรวม", "Total downloads"), downloads, A("ไปหน้าผู้สร้าง", "to creator pages"), "#/admin/packs")}
-    ${tile(A("ยอดดูรวม", "Total views"), views, A("หน้ารายละเอียดแพ็ก", "pack detail pages"), "#/admin/packs")}
-    ${tile(A("ผู้ใช้", "Users"), users, A(`+${num(usersNew)} คนใน 7 วันที่ผ่านมา`, `+${num(usersNew)} in the last 7 days`), "#/admin/users")}
-    ${tile(A("ความคิดเห็น", "Comments"), comments, A(`+${num(commentsNew)} ใน 7 วันที่ผ่านมา`, `+${num(commentsNew)} in the last 7 days`), "#/admin/comments")}
-    ${tile(A("ถูกใจ", "Likes"), likes, "", "#/admin/packs")}
+    ${tile(A("แพ็กที่เผยแพร่", "Published packs"), pub.length, A(`ฉบับร่าง ${packs.length - pub.length}`, `${packs.length - pub.length} draft${packs.length - pub.length === 1 ? "" : "s"}`), "/admin/packs")}
+    ${tile(A("ดาวน์โหลดรวม", "Total downloads"), downloads, A("ไปหน้าผู้สร้าง", "to creator pages"), "/admin/packs")}
+    ${tile(A("ยอดดูรวม", "Total views"), views, A("หน้ารายละเอียดแพ็ก", "pack detail pages"), "/admin/packs")}
+    ${tile(A("ผู้ใช้", "Users"), users, A(`+${num(usersNew)} คนใน 7 วันที่ผ่านมา`, `+${num(usersNew)} in the last 7 days`), "/admin/users")}
+    ${tile(A("ความคิดเห็น", "Comments"), comments, A(`+${num(commentsNew)} ใน 7 วันที่ผ่านมา`, `+${num(commentsNew)} in the last 7 days`), "/admin/comments")}
+    ${tile(A("ถูกใจ", "Likes"), likes, "", "/admin/packs")}
   </div>
 
   <div class="dash-grid">
@@ -121,7 +121,7 @@ async function dashboardTab(openReports) {
     <h2>${A("แพ็กยอดนิยม", "Top packs")}</h2>
     ${top.length ? html`<div class="tbl-w"><table class="tbl">
       <thead><tr><th>${A("ชื่อ", "Name")}</th><th>${A("ประเภท", "Type")}</th><th class="num">${t("score")}</th><th class="num">${A("ดาวน์โหลด", "Downloads")}</th><th class="num">${A("ยอดดู", "Views")}</th></tr></thead>
-      <tbody>${top.map((p) => html`<tr><td><div class="tbl-name"><img src="${thumb(p)}" alt="" width="32" height="32"><a href="#/pack/${p.slug}">${p.name}</a></div></td>
+      <tbody>${top.map((p) => html`<tr><td><div class="tbl-name"><img src="${thumb(p)}" alt="" width="32" height="32"><a href="/pack/${p.slug}">${p.name}</a></div></td>
         <td>${typeLabel(p.type)}</td><td class="num">${scoreLabel(p.score)}</td><td class="num">${num(p.downloads)}</td><td class="num">${num(p.views)}</td></tr>`)}</tbody></table></div>`
       : html`<p class="muted">${A("ยังไม่มีแพ็กที่เผยแพร่", "No published packs yet")}</p>`}
   </section>`;
@@ -131,15 +131,15 @@ async function dashboardTab(openReports) {
 function packsTable(ty) {
   const rows = state.packs.filter((p) => !ty || p.type === ty).sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name));
   const add = ty ? A(`เพิ่ม ${typeLabel(ty)}`, `Add ${t("type1." + ty).toLowerCase()}`) : A("เพิ่มแพ็ก", "Add pack");
-  return html`<div class="adm-h"><h2>${ty ? typeLabel(ty) : A("แพ็กทั้งหมด", "All packs")} <span class="count-b">${rows.length}</span></h2><a class="btn btn-pri btn-sm" href="#/admin/packs/new${ty ? "?type=" + ty : ""}">${icon("plus")} ${add}</a></div>
+  return html`<div class="adm-h"><h2>${ty ? typeLabel(ty) : A("แพ็กทั้งหมด", "All packs")} <span class="count-b">${rows.length}</span></h2><a class="btn btn-pri btn-sm" href="/admin/packs/new${ty ? "?type=" + ty : ""}">${icon("plus")} ${add}</a></div>
   ${rows.length ? html`<div class="tbl-w"><table class="tbl">
     <thead><tr><th>${A("ชื่อ", "Name")}</th>${ty ? "" : html`<th>${A("ประเภท", "Type")}</th>`}<th>${A("สถานะ", "Status")}</th><th class="num">${t("score")}</th><th>${t("checked")}</th><th class="num">${t("downloads")}</th><th><span class="sr">${A("จัดการ", "Actions")}</span></th></tr></thead>
     <tbody>${rows.map((p) => html`<tr>
-      <td><div class="tbl-name"><img src="${thumb(p)}" alt="" width="32" height="32"><a href="#/pack/${p.slug}">${p.name}</a>${p.is_sample ? html`<span class="badge">${t("sample")}</span>` : ""}${p.link_broken ? html`<span class="badge badge-bad">${A("ลิงก์เสีย", "Broken link")}</span>` : ""}</div></td>
+      <td><div class="tbl-name"><img src="${thumb(p)}" alt="" width="32" height="32"><a href="/pack/${p.slug}">${p.name}</a>${p.is_sample ? html`<span class="badge">${t("sample")}</span>` : ""}${p.link_broken ? html`<span class="badge badge-bad">${A("ลิงก์เสีย", "Broken link")}</span>` : ""}</div></td>
       ${ty ? "" : html`<td><a href="${packsHref(p.type)}">${typeLabel(p.type)}</a></td>`}
       <td><span class="st st-${p.status}">${p.status === "published" ? A("เผยแพร่", "Published") : A("ฉบับร่าง", "Draft")}</span></td>
       <td class="num">${scoreLabel(p.score)}</td><td>${fmtDate(p.checked_at)}</td><td class="num">${p.downloads}</td>
-      <td class="tbl-act"><a class="ibtn" href="#/admin/packs/${p.id}" aria-label="${t("edit")} ${p.name}">${icon("edit")}</a><button type="button" class="ibtn ibtn-bad" data-adm="del-pack" data-id="${p.id}" aria-label="${t("del")} ${p.name}">${icon("trash")}</button></td>
+      <td class="tbl-act"><a class="ibtn" href="/admin/packs/${p.id}" aria-label="${t("edit")} ${p.name}">${icon("edit")}</a><button type="button" class="ibtn ibtn-bad" data-adm="del-pack" data-id="${p.id}" aria-label="${t("del")} ${p.name}">${icon("trash")}</button></td>
     </tr>`)}</tbody></table></div>`
   : html`<div class="empty">${icon("download", "empty-i")}<h3>${A(`ยังไม่มี ${typeLabel(ty)}`, `No ${typeLabel(ty)} yet`)}</h3></div>`}`;
 }
@@ -151,8 +151,8 @@ async function packForm(id) {
   const isNew = id === "new";
   let p = isNew ? { type: packTypeOf("new") || "resource-packs", status: "draft", platform: "java", perf: "light", versions: [], images: [] } : state.packs.find((x) => String(x.id) === String(id));
   if (!p) return html`<p class="note note-bad">${t("notFound")}</p>`;
-  // #/admin/packs/new?modrinth=<slug> arrives from a project page on Explore Modrinth.
-  const hq = new URLSearchParams(location.hash.split("?")[1] || "");
+  // /admin/packs/new?modrinth=<slug> arrives from a project page on Explore Modrinth.
+  const hq = new URLSearchParams(location.search);
   const mrRef = isNew ? MR.parseRef(hq.get("modrinth")) : "";
   let mrNote = "";
   if (mrRef) {
@@ -169,7 +169,7 @@ async function packForm(id) {
         ${field(A("ลิงก์หรือ slug ของโปรเจกต์", "Project link or slug"), html`<input id="mr-ref" value="${mrRef || mrSrc}" placeholder="https://modrinth.com/mod/sodium" autocomplete="off">`)}
         <button type="button" class="btn btn-sec" data-adm="mr-fetch">${icon("download")} ${A("ดึงข้อมูล", "Fetch")}</button>
       </div>
-      <small class="muted">${A("เติมชื่อ ผู้สร้าง คำอธิบาย เวอร์ชัน ไลเซนส์ ขนาดไฟล์ รูปปก และแกลเลอรีให้อัตโนมัติ คะแนนและผลทดสอบยังต้องใส่เอง", "Fills name, creator, description, versions, license, file size, icon and gallery. Score and test results stay yours to enter.")} <a class="lnk" href="#/modrinth">${A("ค้นหาใน Modrinth", "Search Modrinth")} ${icon("right")}</a></small>
+      <small class="muted">${A("เติมชื่อ ผู้สร้าง คำอธิบาย เวอร์ชัน ไลเซนส์ ขนาดไฟล์ รูปปก และแกลเลอรีให้อัตโนมัติ คะแนนและผลทดสอบยังต้องใส่เอง", "Fills name, creator, description, versions, license, file size, icon and gallery. Score and test results stay yours to enter.")} <a class="lnk" href="/modrinth">${A("ค้นหาใน Modrinth", "Search Modrinth")} ${icon("right")}</a></small>
     </fieldset>
     <div class="fgrid">
       ${field(A("ชื่อแพ็ก", "Name"), html`<input name="name" value="${p.name || ""}" required maxlength="80">`)}
@@ -193,6 +193,18 @@ async function packForm(id) {
     ${field(A("คำอธิบายสั้น", "Summary"), html`<input name="summary" value="${p.summary || ""}" maxlength="200">`)}
     ${field(t("description"), html`<textarea name="description" rows="6" maxlength="8000">${p.description || ""}</textarea>`, A("รองรับ ## หัวข้อ, - รายการ, **ตัวหนา**, [ลิงก์](https://…)", "Supports ## headings, - lists, **bold**, [links](https://…)"))}
     ${field(t("install"), html`<textarea name="install_steps" rows="5" maxlength="4000" placeholder="1. ...">${p.install_steps || ""}</textarea>`)}
+    <fieldset class="fg-box"><legend>${A("รีวิวของทีม Nyxie", "Nyxie team review")}</legend>
+      <p class="small muted">${A("เขียนจากการทดสอบจริงด้วยคำพูดของทีมเอง ห้ามคัดลอกคำอธิบายของผู้สร้าง หน้าแพ็กจะเข้า Google ก็ต่อเมื่อมีคะแนนหรือวันที่ทดสอบ และมีบทรีวิวนี้แล้ว", "Write it from your own test, in your own words. Don't copy the creator's description. A pack page is indexed by Google only once it has a score or test date and this review.")}</p>
+      ${field(A("บทรีวิว", "Review"), html`<textarea name="review" rows="8" maxlength="20000" placeholder="${A("ลองใช้กับโลกเซอร์ไวเวิลแล้วเป็นยังไง เด่นตรงไหน เหมาะกับใคร…", "How it played in a survival world, what stands out, who it suits…")}">${p.review || ""}</textarea>`, A("รองรับ ## หัวข้อ, - รายการ, **ตัวหนา**", "Supports ## headings, - lists, **bold**"))}
+      <div class="fgrid">
+        ${field(A("ข้อดี", "Pros"), html`<textarea name="pros" rows="4" placeholder="${A("บรรทัดละข้อ", "One per line")}">${(p.pros || []).join("\n")}</textarea>`)}
+        ${field(A("ข้อเสีย", "Cons"), html`<textarea name="cons" rows="4" placeholder="${A("บรรทัดละข้อ", "One per line")}">${(p.cons || []).join("\n")}</textarea>`)}
+        ${field(A("เครื่องที่ใช้ทดสอบ", "Test PC"), html`<input name="test_rig" value="${p.test_rig || ""}" maxlength="200" placeholder="Ryzen 5 5600 / RTX 3060 / 16 GB">`)}
+        ${field(A("เวอร์ชันและการตั้งค่า", "Version and settings"), html`<input name="test_setup" value="${p.test_setup || ""}" maxlength="200" placeholder="1.21.4 · Fabric + Sodium · 12 chunks">`)}
+        ${field(A("FPS ก่อนใส่ (เฉลี่ย)", "FPS without (average)"), html`<input name="fps_base" type="number" min="0" max="5000" step="1" value="${p.fps_base ?? ""}">`)}
+        ${field(A("FPS หลังใส่ (เฉลี่ย)", "FPS with (average)"), html`<input name="fps_with" type="number" min="0" max="5000" step="1" value="${p.fps_with ?? ""}">`, A("วัดในฉากเดียวกันทั้งสองครั้ง", "Measure the same scene both times"))}
+      </div>
+    </fieldset>
     <fieldset class="fg-box"><legend>${A("รูปภาพ", "Images")}</legend>
       <div class="img-row">
         <img class="img-prev" id="th-prev" src="${thumb(p.slug ? p : { ...p, slug: "new" })}" alt="" width="72" height="72">
@@ -219,7 +231,7 @@ async function reportsTab() {
   return html`<div class="adm-h"><h2>${A("รายงานปัญหา", "Reports")}</h2></div><ul class="adm-list">${data.map((r) => {
     const p = state.packs.find((x) => x.id === r.pack_id);
     return html`<li class="adm-item${r.status === "resolved" ? " done" : ""}">
-      <div><p><b>${t("reason." + r.reason)}</b> · ${p ? html`<a href="#/pack/${p.slug}">${p.name}</a>` : "#" + r.pack_id}</p>
+      <div><p><b>${t("reason." + r.reason)}</b> · ${p ? html`<a href="/pack/${p.slug}">${p.name}</a>` : "#" + r.pack_id}</p>
       ${r.note ? html`<p class="muted">${r.note}</p>` : ""}<p class="small muted">${r.profiles?.display_name || A("ไม่ระบุชื่อ", "Anonymous")} · ${timeAgo(r.created_at)}</p></div>
       <div class="row-btns">${p && !p.link_broken && r.reason === "broken-link" ? html`<button type="button" class="btn btn-sec btn-sm" data-adm="mark-broken" data-id="${p.id}">${A("ติดป้ายลิงก์เสีย", "Flag link broken")}</button>` : ""}
       ${r.status === "open" ? html`<button type="button" class="btn btn-pri btn-sm" data-adm="resolve" data-id="${r.id}">${icon("check")} ${A("แก้แล้ว", "Resolve")}</button>` : html`<span class="st st-published">${A("แก้แล้ว", "Resolved")}</span>`}</div>
@@ -233,27 +245,27 @@ async function commentsTab() {
   if (!data.length) return html`<div class="empty">${icon("chat", "empty-i")}<h3>${t("noComments")}</h3></div>`;
   return html`<div class="adm-h"><h2>${A("ความคิดเห็นล่าสุด", "Latest comments")}</h2></div><ul class="adm-list">${data.map((c) => {
     const p = state.packs.find((x) => x.id === c.pack_id);
-    return html`<li class="adm-item"><div><p><b>${c.profiles?.display_name || "—"}</b> · ${p ? html`<a href="#/pack/${p.slug}">${p.name}</a>` : ""} · <span class="muted">${timeAgo(c.created_at)}</span></p><p>${c.body}</p></div>
+    return html`<li class="adm-item"><div><p><b>${c.profiles?.display_name || "—"}</b> · ${p ? html`<a href="/pack/${p.slug}">${p.name}</a>` : ""} · <span class="muted">${timeAgo(c.created_at)}</span></p><p>${c.body}</p></div>
       <button type="button" class="ibtn ibtn-bad" data-adm="del-comment" data-id="${c.id}" aria-label="${t("del")}">${icon("trash")}</button></li>`; })}</ul>`;
 }
 
 // ---------- Tutorials ----------
 function tutorialsTab() {
-  return html`<div class="adm-h"><h2>${A("บทสอน", "Tutorials")}</h2><a class="btn btn-pri btn-sm" href="#/admin/tutorials/new">${icon("plus")} ${A("เพิ่มบทสอน", "Add tutorial")}</a></div>
+  return html`<div class="adm-h"><h2>${A("บทสอน", "Tutorials")}</h2><a class="btn btn-pri btn-sm" href="/admin/tutorials/new">${icon("plus")} ${A("เพิ่มบทสอน", "Add tutorial")}</a></div>
   <ul class="adm-list">${state.tutorials.map((x) => html`<li class="adm-item"><div><p><b>${x.title}</b> ${x.published ? "" : html`<span class="st st-draft">${A("ฉบับร่าง", "Draft")}</span>`}</p><p class="muted">${x.summary}</p></div>
-    <div class="row-btns"><a class="ibtn" href="#/admin/tutorials/${x.id}" aria-label="${t("edit")}">${icon("edit")}</a><button type="button" class="ibtn ibtn-bad" data-adm="del-tut" data-id="${x.id}" aria-label="${t("del")}">${icon("trash")}</button></div></li>`)}</ul>`;
+    <div class="row-btns"><a class="ibtn" href="/admin/tutorials/${x.id}" aria-label="${t("edit")}">${icon("edit")}</a><button type="button" class="ibtn ibtn-bad" data-adm="del-tut" data-id="${x.id}" aria-label="${t("del")}">${icon("trash")}</button></div></li>`)}</ul>`;
 }
 function tutorialForm(id) {
   const isNew = id === "new", x = isNew ? { published: false } : state.tutorials.find((y) => String(y.id) === String(id));
   if (!x) return html`<p class="note note-bad">${t("notFound")}</p>`;
-  return html`<div class="adm-h"><h2>${isNew ? A("บทสอนใหม่", "New tutorial") : x.title}</h2><a class="lnk" href="#/admin/tutorials">${icon("left")} ${A("กลับ", "Back")}</a></div>
+  return html`<div class="adm-h"><h2>${isNew ? A("บทสอนใหม่", "New tutorial") : x.title}</h2><a class="lnk" href="/admin/tutorials">${icon("left")} ${A("กลับ", "Back")}</a></div>
   <form class="form adm-form" data-form="adm-tut" data-id="${isNew ? "" : x.id}">
     ${field(A("ชื่อเรื่อง", "Title"), html`<input name="title" value="${x.title || ""}" required maxlength="120">`)}
     ${field("Slug", html`<input name="slug" value="${x.slug || ""}" pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="${A("สร้างจากชื่ออัตโนมัติ", "auto from title")}">`)}
     ${field(A("คำอธิบายสั้น", "Summary"), html`<input name="summary" value="${x.summary || ""}" maxlength="200">`)}
     ${field(A("เนื้อหา", "Body"), html`<textarea name="body" rows="14">${x.body || ""}</textarea>`, A("รองรับ ## หัวข้อ, 1. ขั้นตอน, - รายการ, **ตัวหนา**, `โค้ด`", "Supports ## headings, 1. steps, - lists, **bold**, `code`"))}
     <label class="chk"><input type="checkbox" name="published"${x.published ? raw(" checked") : ""}> ${A("เผยแพร่", "Published")}</label>
-    <div class="form-bar"><a class="btn btn-ghost" href="#/admin/tutorials">${t("cancel")}</a><button class="btn btn-pri">${t("save")}</button></div>
+    <div class="form-bar"><a class="btn btn-ghost" href="/admin/tutorials">${t("cancel")}</a><button class="btn btn-pri">${t("save")}</button></div>
   </form>`;
 }
 
@@ -263,11 +275,11 @@ async function pagesTab(slug) {
   const { data } = await sb.from("pages").select("*").eq("slug", slug).maybeSingle();
   const pg = data || { slug, title: t("page." + slug), body: "" };
   return html`<div class="adm-h"><h2>${A("หน้าข้อมูล", "Pages")}</h2></div>
-  <nav class="seg-nav">${PAGE_SLUGS.map((s) => html`<a href="#/admin/pages/${s}"${s === slug ? raw(' aria-current="page"') : ""}>${t("page." + s)}</a>`)}</nav>
+  <nav class="seg-nav">${PAGE_SLUGS.map((s) => html`<a href="/admin/pages/${s}"${s === slug ? raw(' aria-current="page"') : ""}>${t("page." + s)}</a>`)}</nav>
   <form class="form adm-form" data-form="adm-page" data-slug="${slug}">
     ${field(A("หัวข้อ", "Title"), html`<input name="title" value="${pg.title}" required>`)}
     ${field(A("เนื้อหา", "Body"), html`<textarea name="body" rows="16">${pg.body}</textarea>`)}
-    <div class="form-bar"><a class="btn btn-ghost" href="#/p/${slug}" target="_blank">${icon("eye")} ${A("ดูหน้า", "View page")}</a><button class="btn btn-pri">${t("save")}</button></div>
+    <div class="form-bar"><a class="btn btn-ghost" href="/p/${slug}" target="_blank">${icon("eye")} ${A("ดูหน้า", "View page")}</a><button class="btn btn-pri">${t("save")}</button></div>
   </form>`;
 }
 
@@ -339,10 +351,11 @@ function mount() {
     }
   });
 }
-const refresh = () => window.dispatchEvent(new HashChangeEvent("hashchange"));
+const refresh = () => window.dispatchEvent(new Event("nyxie:route"));
 
 export async function onSubmit(kind, f, fd) {
   const s = (k) => String(fd.get(k) ?? "").trim();
+  const lines = (k) => s(k).split(/\s*\n\s*/).map((x) => x.replace(/^[-*•]\s*/, "").slice(0, 200)).filter(Boolean).slice(0, 12);
   if (kind === "adm-pack") {
     const row = {
       name: s("name"), slug: s("slug") || slugify(s("name")), type: s("type"), status: s("status"), creator: s("creator"), source_url: s("source_url"),
@@ -350,6 +363,8 @@ export async function onSubmit(kind, f, fd) {
       platform: s("platform"), perf: s("perf"), resolution: s("resolution") || null, style: s("style") || null, category: s("category") || null,
       requirements: s("requirements"), license: s("license"), file_size: s("file_size"), summary: s("summary"), description: s("description"),
       install_steps: s("install_steps"), thumbnail_url: s("thumbnail_url") || null, images: s("images").split(/\s*\n\s*/).filter(Boolean),
+      review: s("review"), pros: lines("pros"), cons: lines("cons"), test_rig: s("test_rig"), test_setup: s("test_setup"),
+      fps_base: s("fps_base") === "" ? null : Math.round(+s("fps_base")), fps_with: s("fps_with") === "" ? null : Math.round(+s("fps_with")),
       before_url: s("before_url") || null, after_url: s("after_url") || null, is_sample: fd.get("is_sample") === "on", link_broken: fd.get("link_broken") === "on",
     };
     const id = f.dataset.id;
@@ -363,7 +378,7 @@ export async function onSubmit(kind, f, fd) {
     const id = f.dataset.id;
     const { error } = id ? await sb.from("tutorials").update(row).eq("id", +id) : await sb.from("tutorials").insert(row);
     if (error) { toast(error.code === "23505" ? A("Slug นี้ถูกใช้แล้ว", "That slug is already used") : error.message, "bad"); return; }
-    await loadCatalog(); toast(t("saved_")); go("#/admin/tutorials");
+    await loadCatalog(); toast(t("saved_")); go("/admin/tutorials");
   }
   if (kind === "adm-page") {
     const { error } = await sb.from("pages").upsert({ slug: f.dataset.slug, title: s("title"), body: String(fd.get("body") || "") });

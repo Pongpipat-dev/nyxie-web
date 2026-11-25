@@ -8,7 +8,8 @@ web
 
 ## Stack
 
-- Static HTML, CSS and JavaScript ES modules with no build step: `index.html`, `assets/css/`, `assets/js/`. Hash routing (`#/`, `#/resource-packs`, `#/pack/<slug>`, `#/search?q=`, `#/admin`, …).
+- Static HTML, CSS and JavaScript ES modules with no build step: `index.html`, `assets/css/`, `assets/js/`. Path routing with the History API (`/`, `/resource-packs`, `/pack/<slug>`, `/search?q=`, `/admin`, …); the host must serve the site at a domain root.
+- `node scripts/build.mjs` (with `SITE_URL`) writes `dist/`: a prerendered HTML file per public page, `sitemap.xml`, `robots.txt`, `404.html` and `_redirects`. Packs without a team review (score or test date plus the review text), empty tutorials and browser-only routes (search, Modrinth, account, admin) are noindex.
 - **Supabase** (project `nyxie`, ref `tztoxyryicyupucgrigr`, region ap-southeast-1, free plan) handles auth (email and password), the Postgres data with row-level security, and the `pack-images` storage bucket.
 - `supabase-js` loads from the jsDelivr CDN at a pinned version.
 - Hosting target not decided.
@@ -31,7 +32,7 @@ Tested by the Nyxie team, and checked against your setup. Every pack shows its v
 - **My Setup:** a player picks edition, Minecraft version and PC power once. Every list, search result and pack page then shows a fit verdict: fits, heavy for your PC, or won't run. The setup is stored on the device and synced to the profile when signed in.
 - **Global search** covers every type and tutorial, with results grouped by type.
 - Browse by type (Resource Packs, Shaders, Mods, Maps). Filter by version, platform, resolution, style, category and "fits my setup". Sort by score, popularity or recently checked.
-- **Pack page:** gallery, optional before/after compare, score, specs, install steps, a download that goes through a leave-site notice to the creator's page, likes, bookmarks, comments and "report a problem".
+- **Pack page:** Nyxie team review (review text, pros and cons, test PC, version and settings, FPS without and with the pack), gallery, optional before/after compare, score, specs, install steps, a download that goes through a leave-site notice to the creator's page, likes, bookmarks, comments and "report a problem".
 - Also: Top 10, Tutorials, Saved packs, policy pages (About, Contact, Privacy, Cookies, Terms, Download Safety).
 - **Admin:** packs CRUD with image upload, reports queue, comment moderation, tutorials, pages and user roles.
 - Removed on 2026-11-21 at the user's request: the Tools page, the Blog, the hero background picker, and the placeholder AdSense setup and cookie banner (the ad ID was a dummy).

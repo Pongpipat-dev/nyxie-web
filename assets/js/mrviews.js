@@ -23,7 +23,7 @@ function nyxiePackFor(slug, id) {
   // Only packs the team actually tested (score or test date) count; imported ones don't.
   return published().find((p) => (p.score != null || p.checked_at) && re.test(p.source_url || ""));
 }
-const testedBadge = (p) => p ? html`<a class="badge badge-acc mr-tested" href="#/pack/${p.slug}" title="${t("mr.testedTip")}">${icon("check")} ${t("mr.tested")}</a>` : "";
+const testedBadge = (p) => p ? html`<a class="badge badge-acc mr-tested" href="/pack/${p.slug}" title="${t("mr.testedTip")}">${icon("check")} ${t("mr.tested")}</a>` : "";
 
 // The player's Java version from My Setup, used to pre-filter versions.
 const setupVersion = () => (state.setup?.edition === "java" ? state.setup.version : "");
@@ -44,11 +44,11 @@ const toHash = (F) => {
   if (F.n !== 20) q.set("n", F.n);
   if (F.page > 1) q.set("page", F.page);
   const s = q.toString();
-  return "#/modrinth" + (s ? "?" + s : "");
+  return "/modrinth" + (s ? "?" + s : "");
 };
 
 function hitRow(h, tab) {
-  const to = `#/modrinth/${h.slug}${tab && tab !== h.project_type ? "?as=" + tab : ""}`;
+  const to = `/modrinth/${h.slug}${tab && tab !== h.project_type ? "?as=" + tab : ""}`;
   const nx = nyxiePackFor(h.slug, h.project_id);
   const cats = (h.display_categories || h.categories || []).slice(0, 4);
   return html`<article class="row mr-row">
@@ -172,7 +172,7 @@ export function projectPage(slug, as) {
     const box = $("#mr-proj", root);
     let p;
     try { p = await MR.project(slug); } catch (e) { box.innerHTML = String(failed(false)); return; }
-    if (!p) { box.innerHTML = String(html`<div class="empty">${icon("search", "empty-i")}<h3>${t("notFound")}</h3><p>${t("notFoundP")}</p><a class="btn btn-sec" href="#/modrinth">${t("mr.title")}</a></div>`); return; }
+    if (!p) { box.innerHTML = String(html`<div class="empty">${icon("search", "empty-i")}<h3>${t("notFound")}</h3><p>${t("notFoundP")}</p><a class="btn btn-sec" href="/modrinth">${t("mr.title")}</a></div>`); return; }
     document.title = `${p.title} · Nyxie`;
     const nx = nyxiePackFor(p.slug, p.id);
     const imgs = (p.gallery || []).slice().sort((a, b) => (b.featured - a.featured) || (a.ordering - b.ordering));
@@ -194,9 +194,9 @@ export function projectPage(slug, as) {
           <ul class="tags">${(p.categories || []).map((c) => html`<li>${MR.loaderName(c)}</li>`)}</ul>
         </div>
         <div class="det-act">
-          ${nx ? html`<a class="btn btn-pri btn-lg" href="#/pack/${nx.slug}">${icon("shield")} ${t("mr.readReview")}</a>${extLink(MR.projectUrl({ ...p, project_type: as || p.project_type }), t("mr.openOn"))}`
+          ${nx ? html`<a class="btn btn-pri btn-lg" href="/pack/${nx.slug}">${icon("shield")} ${t("mr.readReview")}</a>${extLink(MR.projectUrl({ ...p, project_type: as || p.project_type }), t("mr.openOn"))}`
                : extLink(MR.projectUrl({ ...p, project_type: as || p.project_type }), t("mr.openOn"), "btn btn-pri btn-lg")}
-          ${isAdmin() ? html`<a class="btn btn-sec" href="#/admin/packs/new?modrinth=${encodeURIComponent(p.slug)}${as ? "&as=" + as : ""}">${icon("plus")} ${nx ? t("mr.importAgain") : t("mr.import")}</a>` : ""}
+          ${isAdmin() ? html`<a class="btn btn-sec" href="/admin/packs/new?modrinth=${encodeURIComponent(p.slug)}${as ? "&as=" + as : ""}">${icon("plus")} ${nx ? t("mr.importAgain") : t("mr.import")}</a>` : ""}
           ${links.length ? html`<p class="mr-links">${links.map(([u, l]) => html`<a class="lnk" href="${u}" target="_blank" rel="noopener noreferrer">${l} ${icon("external")}</a>`)}</p>` : ""}
         </div>
       </header>
@@ -214,7 +214,7 @@ export function projectPage(slug, as) {
     MR.creatorOf(p).then((c) => { const el = $("#mr-creator", root); if (el) el.textContent = t("by", { c: c || "—" }); }).catch(() => {});
     mountVersions(root, p);
   };
-  return { title: t("mr.title"), mount, body: html`<nav class="crumbs" aria-label="breadcrumb"><a href="#/modrinth">${icon("left")} ${t("mr.title")}</a></nav><div id="mr-proj" aria-live="polite">${spin()}</div>` };
+  return { title: t("mr.title"), mount, body: html`<nav class="crumbs" aria-label="breadcrumb"><a href="/modrinth">${icon("left")} ${t("mr.title")}</a></nav><div id="mr-proj" aria-live="polite">${spin()}</div>` };
 }
 
 // packId: the Nyxie pack these files belong to, so downloads are counted on it.

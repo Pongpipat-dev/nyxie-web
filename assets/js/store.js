@@ -33,7 +33,7 @@ export async function saveSetup(s) {
 }
 
 // ---------- Loading ----------
-const PACK_COLS = "id,slug,name,type,summary,description,creator,source_url,license,file_size,requirements,versions,platform,resolution,style,category,perf,score,thumbnail_url,images,before_url,after_url,install_steps,status,is_sample,link_broken,views,downloads,checked_at,updated_at,created_at";
+const PACK_COLS = "id,slug,name,type,summary,description,creator,source_url,license,file_size,requirements,versions,platform,resolution,style,category,perf,score,thumbnail_url,images,before_url,after_url,install_steps,review,pros,cons,test_rig,test_setup,fps_base,fps_with,status,is_sample,link_broken,views,downloads,checked_at,updated_at,created_at";
 
 export async function loadCatalog() {
   const [p, tu] = await Promise.all([
