@@ -1,4 +1,4 @@
-import { html, raw, icon, logo, $, $$, toast, openDialog, closeDialog, dlgHead, thumb, typeLabel, TYPES, fitOf, fitPill, scoreLabel } from "./ui.js";
+import { html, raw, icon, logo, $, $$, toast, openDialog, closeDialog, dlgHead, thumb, typeLabel, TYPES, fitOf, fitPill, scoreLabel, savePerPage } from "./ui.js";
 import { t, getLang, setLang, langName, LANGS } from "./i18n.js";
 import { sb, state, boot, onChange, emit, isAdmin, saveSetup, published, packById, toggleBookmark, likeInfo, toggleLike, loadComments, recordView, recordDownload, loadCatalog } from "./store.js";
 import * as V from "./views.js";
@@ -206,7 +206,7 @@ function setQuery(mut) {
 
 // ---------- Events ----------
 document.addEventListener("click", async (ev) => {
-  const el = ev.target.closest("[data-act],[data-clear],[data-page]");
+  const el = ev.target.closest("[data-act],[data-clear],[data-page],#results [data-per]");
   // close floating menus when clicking elsewhere
   if (!ev.target.closest(".menu-w")) $$(".menu").forEach((m) => { m.hidden = true; m.previousElementSibling?.setAttribute("aria-expanded", "false"); });
   if (!ev.target.closest(".hsearch")) hsClose();
@@ -221,6 +221,7 @@ document.addEventListener("click", async (ev) => {
     });
     return;
   }
+  if (el.dataset.per) { const n = +el.dataset.per; savePerPage(n); setQuery((q) => { n === 20 ? q.delete("n") : q.set("n", n); q.delete("page"); }); $(`#results [data-per="${n}"]`)?.focus(); return; }
   if (el.dataset.page) { setQuery((q) => q.set("page", el.dataset.page)); $("#main").scrollIntoView({ block: "start" }); return; }
   const act = el.dataset.act, id = +el.dataset.id, p = id ? packById(id) : null;
   switch (act) {

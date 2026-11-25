@@ -1,4 +1,4 @@
-import { html, raw, icon, thumb, fitOf, fitPill, scoreLabel, typeLabel, TYPES, md, esc } from "./ui.js";
+import { html, raw, icon, thumb, fitOf, fitPill, scoreLabel, typeLabel, TYPES, md, esc, perPage, perPicker } from "./ui.js";
 import { t, fmtDate, fmtDay, fmtNum, timeAgo, langName } from "./i18n.js";
 import { state, published, packBySlug, isAdmin } from "./store.js";
 import { modrinthRef } from "./mrviews.js";
@@ -93,14 +93,13 @@ export function home() {
 // ---------- Lists ----------
 const VERSIONS = () => [...new Set(published().flatMap((p) => p.versions || []))].sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
 const uniq = (list, k) => [...new Set(list.map((p) => p[k]).filter(Boolean))].sort();
-const PAGE = 20;
 
 const arr = (q, k) => (q.get(k) || "").split(",").filter(Boolean);
 export const MULTI = ["ver", "plat", "res", "perf", "style", "cat"];
 export function readFilters(q) {
   return {
     ver: arr(q, "ver"), plat: arr(q, "plat"), res: arr(q, "res"), style: arr(q, "style"),
-    cat: arr(q, "cat"), perf: arr(q, "perf"), fit: q.get("fit") === "1", sort: q.get("sort") || "score", page: Math.max(1, +q.get("page") || 1),
+    cat: arr(q, "cat"), perf: arr(q, "perf"), fit: q.get("fit") === "1", sort: q.get("sort") || "score", page: Math.max(1, +q.get("page") || 1), n: perPage(q),
   };
 }
 function applyFilters(list, F) {
@@ -136,13 +135,13 @@ export function filtersPanel(type, F) {
 
 export function listResults(type, F) {
   const base = published().filter((p) => p.type === type), list = applyFilters(base, F);
-  const pages = Math.max(1, Math.ceil(list.length / PAGE)), pg = Math.min(F.page, pages), view = list.slice((pg - 1) * PAGE, pg * PAGE);
+  const pages = Math.max(1, Math.ceil(list.length / F.n)), pg = Math.min(F.page, pages), view = list.slice((pg - 1) * F.n, pg * F.n);
   const active = MULTI.flatMap((k) => F[k].map((v) => [k, v]));
   const chipLabel = (k, v) => k === "plat" ? t("ed." + v) : k === "perf" ? t("perf." + v) : v;
   return html`
     <div class="res-bar">
       <p class="count">${t("resultsN", { n: list.length })}${state.setup ? html` · <span class="muted">${t("fitsCount", { n: base.filter((p) => fitOf(p, state.setup)?.k === "ok").length, t: base.length })}</span>` : ""}</p>
-      <label class="sort">${t("sortBy")}<select data-filter="sort">${["score", "popular", "checked", "name"].map((s) => html`<option value="${s}"${F.sort === s ? raw(" selected") : ""}>${t("sort." + s)}</option>`)}</select></label>
+      <div class="res-r">${perPicker(F.n)}<label class="sort">${t("sortBy")}<select data-filter="sort">${["score", "popular", "checked", "name"].map((s) => html`<option value="${s}"${F.sort === s ? raw(" selected") : ""}>${t("sort." + s)}</option>`)}</select></label></div>
     </div>
     ${active.length || F.fit ? html`<div class="chips">${F.fit ? html`<button type="button" class="chip" data-clear="fit">${t("fitsOnly")} ${icon("x")}</button>` : ""}${active.map(([k, v]) => html`<button type="button" class="chip" data-clear="${k}:${v}">${chipLabel(k, v)} ${icon("x")}</button>`)}<button type="button" class="lnk" data-clear="all">${t("clearAll")}</button></div>` : ""}
     ${view.length ? rows(view) : empty(t("noResults"), t("noResultsP"), html`<button type="button" class="btn btn-sec" data-clear="all">${t("clearAll")}</button>`)}

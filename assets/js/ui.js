@@ -129,6 +129,18 @@ export const dlgHead = (title) => html`<div class="dlg-h"><h2>${title}</h2><butt
 
 export const scoreLabel = (s) => (s == null ? "—" : (+s).toFixed(1));
 export const typeLabel = (type) => t("type." + type);
+// ---------- Results per page ----------
+// The choice is kept on the device so every list opens with it; a ?n= in the URL wins.
+export const PER_OPTIONS = [10, 20, 50];
+export function perPage(q) {
+  const fromUrl = +q?.get?.("n");
+  if (PER_OPTIONS.includes(fromUrl)) return fromUrl;
+  try { const s = +localStorage.getItem("nyxie.per"); if (PER_OPTIONS.includes(s)) return s; } catch (e) {}
+  return 20;
+}
+export function savePerPage(n) { try { localStorage.setItem("nyxie.per", String(n)); } catch (e) {} }
+export const perPicker = (n) => html`<div class="per" role="group" aria-label="${t("perPage")}"><span>${t("show")}</span>${PER_OPTIONS.map((x) => html`<button type="button" class="per-b" data-per="${x}" aria-pressed="${x === n}">${x}</button>`)}</div>`;
+
 export const TYPES = ["resource-packs", "shaders", "mods", "modpacks", "datapacks", "plugins", "maps"];
 
 // Minimal, safe markdown: escapes first, then ## headings, lists, bold, links, paragraphs.

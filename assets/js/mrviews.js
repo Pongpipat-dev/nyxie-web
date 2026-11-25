@@ -1,11 +1,10 @@
 // Explore Modrinth: live search and project pages backed by the Modrinth API.
 // Everything here is Modrinth's data, not Nyxie test results, and the page says so.
-import { html, raw, icon, md, $, openDialog, dlgHead } from "./ui.js";
+import { html, raw, icon, md, $, openDialog, dlgHead, perPage, perPicker, savePerPage } from "./ui.js";
 import { t, fmtDate, fmtNum, timeAgo } from "./i18n.js";
 import { state, published, isAdmin } from "./store.js";
 import * as MR from "./modrinth.js";
 
-const PAGE = 20;
 const LOADERS_BY_TYPE = {
   mod: ["fabric", "forge", "neoforge", "quilt"],
   modpack: ["fabric", "forge", "neoforge", "quilt"],
@@ -33,7 +32,7 @@ const setupVersion = () => (state.setup?.edition === "java" ? state.setup.versio
 function readQ(q) {
   const type = MR.MR_TYPES.includes(q.get("type")) ? q.get("type") : "mod";
   const loader = (LOADERS_BY_TYPE[type] || []).includes(q.get("loader")) ? q.get("loader") : "";
-  return { q: q.get("q") || "", type, ver: q.get("ver") || "", loader, sort: MR.SORTS.includes(q.get("sort")) ? q.get("sort") : "relevance", page: Math.max(1, +q.get("page") || 1) };
+  return { q: q.get("q") || "", type, ver: q.get("ver") || "", loader, sort: MR.SORTS.includes(q.get("sort")) ? q.get("sort") : "relevance", page: Math.max(1, +q.get("page") || 1), n: perPage(q) };
 }
 const toHash = (F) => {
   const q = new URLSearchParams();
@@ -42,6 +41,7 @@ const toHash = (F) => {
   if (F.ver) q.set("ver", F.ver);
   if (F.loader) q.set("loader", F.loader);
   if (F.sort !== "relevance") q.set("sort", F.sort);
+  if (F.n !== 20) q.set("n", F.n);
   if (F.page > 1) q.set("page", F.page);
   const s = q.toString();
   return "#/modrinth" + (s ? "?" + s : "");
@@ -77,10 +77,10 @@ async function loadResults(root, F) {
   box.innerHTML = String(spin());
   box.setAttribute("aria-busy", "true");
   try {
-    const r = await MR.search({ query: F.q, type: F.type, version: F.ver, loader: F.loader, index: F.sort, offset: (F.page - 1) * PAGE, limit: PAGE });
-    const pages = Math.max(1, Math.ceil(Math.min(r.total_hits, 10000) / PAGE));
+    const r = await MR.search({ query: F.q, type: F.type, version: F.ver, loader: F.loader, index: F.sort, offset: (F.page - 1) * F.n, limit: F.n });
+    const pages = Math.max(1, Math.ceil(Math.min(r.total_hits, 10000) / F.n));
     box.innerHTML = String(html`
-      <p class="count mr-count">${t("mr.resultsN", { n: fmtNum(r.total_hits) })}</p>
+      <div class="res-bar"><p class="count mr-count">${t("mr.resultsN", { n: fmtNum(r.total_hits) })}</p>${perPicker(F.n)}</div>
       ${r.hits.length ? html`<div class="rows">${r.hits.map((h) => hitRow(h, F.type))}</div>`
         : html`<div class="empty">${icon("search", "empty-i")}<h3>${t("noResults")}</h3><p>${t("mr.noResultsP")}</p></div>`}
       ${pages > 1 ? html`<nav class="pager" aria-label="pagination">
@@ -122,6 +122,8 @@ export function explore(q) {
     side.addEventListener("submit", (ev) => { ev.preventDefault(); ev.stopPropagation(); update({ q: new FormData(ev.target).get("q").trim(), page: 1 }); });
     side.addEventListener("change", (ev) => { const k = ev.target.dataset.mr; if (k) update({ [k]: ev.target.value, page: 1 }); });
     root.addEventListener("click", (ev) => {
+      const per = ev.target.closest("[data-per]");
+      if (per) { const n = +per.dataset.per; savePerPage(n); update({ n, page: 1 }); return; }
       const pg = ev.target.closest("[data-mr-page]");
       if (pg) { update({ page: +pg.dataset.mrPage }); $(".mr-tabs", root)?.scrollIntoView({ block: "start" }); return; }
       if (ev.target.closest('[data-mr="retry"]')) loadResults(root, F);
