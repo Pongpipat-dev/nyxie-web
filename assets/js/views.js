@@ -10,7 +10,8 @@ export const tags = (p, max = 4) => {
   if (p.style) a.push(p.style);
   return html`<ul class="tags">${a.slice(0, max).map((x) => html`<li>${x}</li>`)}</ul>`;
 };
-const sampleBadge = (p) => p.is_sample ? html`<span class="badge" title="${t("sampleTip")}">${t("sample")}</span>` : "";
+const sampleBadge = (p) => p.is_sample ? html`<span class="badge" title="${t("sampleTip")}">${t("sample")}</span>`
+  : p.score == null && !p.checked_at ? html`<span class="badge badge-warn" title="${t("untestedTip")}">${t("untested")}</span>` : "";
 const bmBtn = (p) => html`<button type="button" class="ibtn bm${state.bookmarks.has(p.id) ? " on" : ""}" data-act="bookmark" data-id="${p.id}" aria-pressed="${state.bookmarks.has(p.id)}" aria-label="${t("bookmark")}: ${p.name}" title="${t("bookmark")}">${icon("bookmark")}</button>`;
 const score = (p) => html`<div class="score" title="${t("score")}"><b>${scoreLabel(p.score)}</b><small>/10</small></div>`;
 

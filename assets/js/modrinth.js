@@ -116,6 +116,19 @@ const LOADER_NAMES = { neoforge: "NeoForge", liteloader: "LiteLoader", modloader
 export const loaderName = (l) => LOADER_NAMES[l] || String(l).replace(/(^|[-_])(\w)/g, (m, s, c) => (s ? " " : "") + c.toUpperCase());
 export const LOADER_SET = new Set(["fabric", "forge", "neoforge", "quilt", "liteloader", "modloader", "rift", "babric", "bukkit", "spigot", "paper", "purpur", "folia", "sponge", "bungeecord", "velocity", "waterfall", "iris", "optifine", "canvas", "vanilla", "minecraft", "datapack"]);
 
+// Modrinth bodies mix Markdown with HTML; Nyxie's md() escapes HTML, so tags, comments and
+// inline images are stripped.
+export const cleanBody = (s) => String(s || "").replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, "").replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\[\s*\]\([^)]*\)/g, "").replace(/\n{3,}/g, "\n\n").trim();
+// Nyxie slugs are lowercase words joined by single hyphens.
+export const toSlug = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+// Performance weight estimated from the creator's own tags until the team tests it.
+function perfOf(ty, cats, res) {
+  if (ty === "shader") return cats.some((c) => /^(high|screenshot)$/.test(c)) ? "heavy" : cats.some((c) => /^(potato|low)$/.test(c)) ? "light" : "medium";
+  if (ty === "resourcepack") { const n = parseInt(res) || 16; return n >= 128 ? "heavy" : n >= 64 ? "medium" : "light"; }
+  if (ty === "modpack") return "medium";
+  return "light";
+}
+
 // Pack fields for the Nyxie admin form, filled from a Modrinth project.
 // One Modrinth project can be several types at once (a mod that is also a plugin and a
 // data pack) but the API reports only one, so the type comes from `hint` (the Explore
@@ -134,20 +147,21 @@ export async function toPackDraft(ref, hint) {
   const res = cats.filter((c) => /^\d+x(\+|-|$)/i.test(c)).sort((a, b) => parseInt(a) - parseInt(b))[0] || "";
   const cat = cats.find((c) => !LOADER_SET.has(c) && !/^\d+x/i.test(c) && !/^(low|medium|high|screenshot|potato)$/i.test(c)) || "";
   return {
-    name: p.title,
-    slug: p.slug,
+    name: String(p.title).slice(0, 80),
+    slug: toSlug(p.slug),
     type: toNyxieType(ty),
-    creator,
+    creator: String(creator).slice(0, 80),
     source_url: projectUrl({ ...p, project_type: ty }),
     versions: majorVersions(p.game_versions),
     platform: "java",
     category: cat ? loaderName(cat) : "",
     resolution: res.replace(/[+-].*$/, ""),
+    perf: perfOf(ty, cats, res),
     requirements: lds.length ? `Requires ${lds.map(loaderName).join(" / ")}` : "",
     license: lic.name || (lic.id && !/^LicenseRef-/i.test(lic.id) ? lic.id : lic.id?.replace(/^LicenseRef-/i, "").replace(/-/g, " ")) || "",
     file_size: file ? fmtBytes(file.size) : "",
     summary: (p.description || "").slice(0, 200),
-    description: (p.body || "").slice(0, 8000),
+    description: cleanBody(p.body).slice(0, 8000),
     thumbnail_url: p.icon_url || "",
     images: (p.gallery || []).sort((a, b) => (b.featured - a.featured) || (a.ordering - b.ordering)).map((g) => g.raw_url || g.url).slice(0, 12),
   };

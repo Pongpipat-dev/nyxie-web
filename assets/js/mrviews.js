@@ -21,7 +21,8 @@ const extLink = (href, label, cls = "btn btn-sec") => html`<a class="${cls}" hre
 // Nyxie pack whose download link points at this Modrinth project, if the team has reviewed it.
 function nyxiePackFor(slug, id) {
   const re = new RegExp(`modrinth\\.com/[a-z]+/(${[slug, id].filter(Boolean).map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})(?:[/?#]|$)`, "i");
-  return published().find((p) => re.test(p.source_url || ""));
+  // Only packs the team actually tested (score or test date) count; imported ones don't.
+  return published().find((p) => (p.score != null || p.checked_at) && re.test(p.source_url || ""));
 }
 const testedBadge = (p) => p ? html`<a class="badge badge-acc mr-tested" href="#/pack/${p.slug}" title="${t("mr.testedTip")}">${icon("check")} ${t("mr.tested")}</a>` : "";
 
@@ -142,7 +143,6 @@ export function explore(q) {
 // ---------- Project page ----------
 // Modrinth bodies are Markdown mixed with HTML. md() escapes HTML, so tags and inline
 // images are stripped first; the full page is one click away on Modrinth.
-const cleanBody = (s) => String(s || "").replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, "").replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\[\s*\]\([^)]*\)/g, "").replace(/\n{3,}/g, "\n\n").trim();
 const sideLabel = (v) => ({ required: t("mr.side.required"), optional: t("mr.side.optional"), unsupported: t("mr.side.unsupported") }[v] || "—");
 const verRange = (list) => { const r = MR.releaseVersions(list); return r.length ? (r.length === 1 ? r[0] : `${r[0]} – ${r[r.length - 1]}`) : "—"; };
 
@@ -203,7 +203,7 @@ export function projectPage(slug, as) {
         <div class="det-main">
           <section class="panel" id="mr-versions"><h2>${t("mr.files")}</h2>${spin()}</section>
           ${imgs.length ? html`<section class="panel"><h2>${t("gallery")}</h2><div class="gal" data-name="${p.title}">${imgs.map((g, i) => html`<a href="${g.raw_url || g.url}" target="_blank" rel="noopener" data-lbi><img src="${g.url}" alt="${g.title || `${p.title} ${i + 1}`}" loading="lazy"></a>`)}</div></section>` : ""}
-          ${p.body ? html`<section class="panel prose"><h2>${t("description")}</h2>${md(cleanBody(p.body))}<p>${extLink(MR.projectUrl(p), t("mr.readFull"), "lnk")}</p></section>` : ""}
+          ${p.body ? html`<section class="panel prose"><h2>${t("description")}</h2>${md(MR.cleanBody(p.body))}<p>${extLink(MR.projectUrl(p), t("mr.readFull"), "lnk")}</p></section>` : ""}
         </div>
         <aside class="det-side">
           <section class="panel"><h2>${t("mr.facts")}</h2><dl class="facts">${facts.map(([k, v]) => html`<div><dt>${k}</dt><dd>${v}</dd></div>`)}</dl></section>

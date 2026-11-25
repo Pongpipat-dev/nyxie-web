@@ -69,7 +69,7 @@ const S = {
     "page.about": "เกี่ยวกับ Nyxie", "page.contact": "ติดต่อเรา", "page.privacy": "นโยบายความเป็นส่วนตัว", "page.cookies": "นโยบายคุกกี้", "page.terms": "ข้อกำหนดการใช้งาน", "page.download-safety": "ความปลอดภัยในการดาวน์โหลด",
     pageEmpty: "เนื้อหาหน้านี้ยังไม่ได้เขียน", legal: "ข้อกฎหมาย", checkFit: "เช็กกับเครื่อง", checkedLbl: "ตรวจ", searchShort: "ค้นหาใน Nyxie",
     // Modrinth explore
-    more: "เพิ่มเติม", "mr.title": "สำรวจ Modrinth", "mr.lead": "ค้นหาม็อด โมดแพ็ก รีซอร์สแพ็ก Shader ดาต้าแพ็ก และปลั๊กอินแบบสดจาก Modrinth",
+    more: "เพิ่มเติม", untested: "ยังไม่ได้ทดสอบ", untestedTip: "นำเข้าจาก Modrinth ทีม Nyxie ยังไม่ได้ทดสอบและให้คะแนน ความหนักเครื่องเป็นค่าประมาณจากแท็กของผู้สร้าง", "mr.title": "สำรวจ Modrinth", "mr.lead": "ค้นหาม็อด โมดแพ็ก รีซอร์สแพ็ก Shader ดาต้าแพ็ก และปลั๊กอินแบบสดจาก Modrinth",
     "mr.notTested": "ข้อมูลส่วนนี้ดึงสดจาก Modrinth ทีม Nyxie ยังไม่ได้ทดสอบ ยกเว้นรายการที่มีป้าย “Nyxie ทดสอบแล้ว”",
     "mr.tested": "Nyxie ทดสอบแล้ว", "mr.testedTip": "ทีม Nyxie รีวิวโปรเจกต์นี้แล้ว คลิกเพื่ออ่านผลทดสอบ",
     "mr.types": "ประเภทโปรเจกต์", "mr.type.mod": "ม็อด", "mr.type.modpack": "โมดแพ็ก", "mr.type.resourcepack": "รีซอร์สแพ็ก", "mr.type.shader": "Shader", "mr.type.datapack": "ดาต้าแพ็ก", "mr.type.plugin": "ปลั๊กอิน",
@@ -143,7 +143,7 @@ const S = {
     "page.about": "About Nyxie", "page.contact": "Contact", "page.privacy": "Privacy Policy", "page.cookies": "Cookie Policy", "page.terms": "Terms of Service", "page.download-safety": "Download Safety",
     pageEmpty: "This page hasn't been written yet.", legal: "Legal", checkFit: "Check fit", checkedLbl: "Checked", searchShort: "Search Nyxie",
     // Modrinth explore
-    more: "More", "mr.title": "Explore Modrinth", "mr.lead": "Search mods, modpacks, resource packs, shaders, data packs and plugins live from Modrinth.",
+    more: "More", untested: "Not tested yet", untestedTip: "Imported from Modrinth. The Nyxie team hasn't tested or scored it yet; the performance weight is an estimate from the creator's tags.", "mr.title": "Explore Modrinth", "mr.lead": "Search mods, modpacks, resource packs, shaders, data packs and plugins live from Modrinth.",
     "mr.notTested": "This section is live data from Modrinth. The Nyxie team hasn't tested these, except items marked “Tested by Nyxie”.",
     "mr.tested": "Tested by Nyxie", "mr.testedTip": "The Nyxie team has reviewed this project. Click to read the test results.",
     "mr.types": "Project types", "mr.type.mod": "Mods", "mr.type.modpack": "Modpacks", "mr.type.resourcepack": "Resource packs", "mr.type.shader": "Shaders", "mr.type.datapack": "Data packs", "mr.type.plugin": "Plugins",

@@ -631,6 +631,7 @@ main { flex: 1; width: 100%; max-width: var(--wrap); margin: 0 auto; padding: 28
 .mr-vname { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; max-width: 32ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mr-more { margin-top: 12px; text-align: center; }
 .mr-import { display: grid; gap: 10px; }
+.badge-warn { color: var(--warn); background: var(--warn-soft); }
 .mr-import-r { display: flex; gap: 8px; align-items: end; }
 .mr-import-r .fl { flex: 1; }
 .nav-more { display: flex; }
