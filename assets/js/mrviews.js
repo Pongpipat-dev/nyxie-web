@@ -1,6 +1,6 @@
 // Explore Modrinth: live search and project pages backed by the Modrinth API.
 // Everything here is Modrinth's data, not Nyxie test results, and the page says so.
-import { html, raw, icon, md, $ } from "./ui.js";
+import { html, raw, icon, md, $, openDialog, dlgHead } from "./ui.js";
 import { t, fmtDate, fmtNum, timeAgo } from "./i18n.js";
 import { state, published, isAdmin } from "./store.js";
 import * as MR from "./modrinth.js";
@@ -146,7 +146,7 @@ export function explore(q) {
 const sideLabel = (v) => ({ required: t("mr.side.required"), optional: t("mr.side.optional"), unsupported: t("mr.side.unsupported") }[v] || "—");
 const verRange = (list) => { const r = MR.releaseVersions(list); return r.length ? (r.length === 1 ? r[0] : `${r[0]} – ${r[r.length - 1]}`) : "—"; };
 
-function versionsTable(list, shown) {
+function versionsTable(list, shown, packId) {
   if (!list.length) return html`<div class="empty">${icon("search", "empty-i")}<h3>${t("mr.noVersions")}</h3><p>${t("mr.noVersionsP")}</p></div>`;
   return html`<div class="tbl-w"><table class="tbl mr-vt">
     <thead><tr><th>${t("mr.version")}</th><th>${t("versions")}</th><th>${t("mr.loader")}</th><th>${t("mr.published")}</th><th class="num">${t("downloads")}</th><th><span class="sr">${t("mr.file")}</span></th></tr></thead>
@@ -158,7 +158,7 @@ function versionsTable(list, shown) {
         <td>${v.loaders.map(MR.loaderName).join(", ")}</td>
         <td>${fmtDate(v.date_published)}</td>
         <td class="num">${fmtNum(v.downloads)}</td>
-        <td class="tbl-act">${f ? html`<a class="btn btn-sec btn-sm" href="${f.url}" rel="noopener noreferrer" title="${f.filename}">${icon("download")} ${MR.fmtBytes(f.size)}</a>` : ""}</td>
+        <td class="tbl-act">${f ? html`<a class="btn btn-sec btn-sm" href="${f.url}" download="${f.filename}" rel="noopener noreferrer" title="${f.filename}"${packId ? raw(` data-act="file-dl" data-id="${packId}"`) : ""}>${icon("download")} ${MR.fmtBytes(f.size)}</a>` : ""}</td>
       </tr>`;
     })}</tbody></table></div>
     ${list.length > shown ? html`<p class="mr-more"><button type="button" class="btn btn-sec btn-sm" data-mr="more">${t("mr.showMore", { n: list.length - shown })}</button></p>` : ""}`;
@@ -215,7 +215,8 @@ export function projectPage(slug, as) {
   return { title: t("mr.title"), mount, body: html`<nav class="crumbs" aria-label="breadcrumb"><a href="#/modrinth">${icon("left")} ${t("mr.title")}</a></nav><div id="mr-proj" aria-live="polite">${spin()}</div>` };
 }
 
-async function mountVersions(root, p) {
+// packId: the Nyxie pack these files belong to, so downloads are counted on it.
+export async function mountVersions(root, p, packId) {
   const box = $("#mr-versions", root);
   let all;
   try { all = await MR.versions(p.id); } catch (e) { box.innerHTML = String(html`<h2>${t("mr.files")}</h2>${failed(false)}`); return; }
@@ -231,9 +232,65 @@ async function mountVersions(root, p) {
         ${lds.length > 1 ? html`<label><span class="sr">${t("mr.loader")}</span><select data-mrv="ld"><option value="">${t("mr.allLoaders")}</option>${lds.map((l) => html`<option value="${l}"${F.ld === l ? raw(" selected") : ""}>${MR.loaderName(l)}</option>`)}</select></label>` : ""}
       </div></div>
       ${sv && !gvs.includes(sv) && state.setup ? html`<p class="note note-warn">${icon("alert")} ${t("mr.noSetupVersion", { v: sv })}</p>` : ""}
-      ${versionsTable(list, F.shown)}`);
+      ${versionsTable(list, F.shown, packId)}`);
   };
   box.addEventListener("change", (ev) => { const k = ev.target.dataset.mrv; if (!k) return; F = { ...F, [k]: ev.target.value, shown: 10 }; paint(); $(`[data-mrv="${k}"]`, box)?.focus(); });
   box.addEventListener("click", (ev) => { if (ev.target.closest('[data-mr="more"]')) { F.shown += 20; paint(); } });
+  paint();
+}
+
+// ---------- Direct file download for Nyxie packs ----------
+// Modrinth slug of a Nyxie pack whose download link points at modrinth.com, else "".
+export const modrinthRef = (p) => (/modrinth\.com\//i.test(p?.source_url || "") ? MR.parseRef(p.source_url) : "");
+const extOf = (name) => (String(name).match(/\.([a-z0-9]+)$/i)?.[1] || "").toLowerCase();
+
+// Picks the newest file that fits the chosen Minecraft version and loader (releases first)
+// and serves it straight from Modrinth's CDN. The dialog lets the player change both.
+export async function downloadDialog(p) {
+  const ref = modrinthRef(p), d = $("#dlg");
+  const head = dlgHead(t("dl.title", { n: p.name }));
+  openDialog(html`${head}${spin()}`, { label: t("dl.title", { n: p.name }) });
+  let all;
+  try { all = await MR.versions(ref); } catch (e) { all = null; }
+  if (!d.open) return;
+  if (!all?.length) {
+    d.innerHTML = String(html`${head}<p class="note note-bad">${t("mr.errT")}</p>
+      <div class="dlg-f">${extLink(p.source_url, t("mr.openOn"))}</div>`);
+    return;
+  }
+  const gvs = MR.releaseVersions([...new Set(all.flatMap((v) => v.game_versions))]).sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+  const lds = [...new Set(all.flatMap((v) => v.loaders))].filter((l) => l !== "minecraft");
+  const sv = setupVersion();
+  const F = { gv: gvs.includes(sv) ? sv : "", ld: "" };
+  const paint = () => {
+    const list = all.filter((v) => (!F.gv || v.game_versions.includes(F.gv)) && (!F.ld || v.loaders.includes(F.ld)));
+    const v = list.find((x) => x.version_type === "release") || list[0];
+    const f = MR.primaryFile(v), ext = f ? extOf(f.filename) : "";
+    const others = v ? v.files.filter((x) => x !== f) : [];
+    const gv = v ? MR.releaseVersions(v.game_versions) : [];
+    d.innerHTML = String(html`${head}
+      <div class="dl-f">
+        <label>${t("version")}<select data-dlv="gv"><option value="">${t("dl.latest")}</option>${gvs.map((x) => html`<option value="${x}"${F.gv === x ? raw(" selected") : ""}>${x}${x === sv ? ` · ${t("mr.mySetup")}` : ""}</option>`)}</select></label>
+        ${lds.length > 1 ? html`<label>${t("mr.loader")}<select data-dlv="ld"><option value="">${t("mr.allLoaders")}</option>${lds.map((l) => html`<option value="${l}"${F.ld === l ? raw(" selected") : ""}>${MR.loaderName(l)}</option>`)}</select></label>` : ""}
+      </div>
+      ${sv && state.setup && !gvs.includes(sv) ? html`<p class="note note-warn">${icon("alert")} ${t("mr.noSetupVersion", { v: sv })}</p>` : ""}
+      ${f ? html`<div class="dl-card">
+          <p class="dl-name">${icon("download")} <b>${f.filename}</b></p>
+          <dl class="facts">
+            <div><dt>${t("mr.version")}</dt><dd>${v.version_number}${v.version_type !== "release" ? html` <span class="badge${v.version_type === "alpha" ? " badge-bad" : ""}">${t("mr.vt." + v.version_type)}</span>` : ""}</dd></div>
+            <div><dt>Minecraft</dt><dd>${gv.length > 3 ? `${gv[0]} – ${gv[gv.length - 1]}` : gv.join(", ") || v.game_versions.join(", ")}</dd></div>
+            ${v.loaders.length ? html`<div><dt>${t("mr.loader")}</dt><dd>${v.loaders.map(MR.loaderName).join(", ")}</dd></div>` : ""}
+            <div><dt>${t("mr.published")}</dt><dd>${fmtDate(v.date_published)}</dd></div>
+          </dl>
+          <a class="btn btn-pri btn-lg btn-block" href="${f.url}" download="${f.filename}" rel="noopener noreferrer" data-act="file-dl" data-id="${p.id}">${icon("download")} ${t("dl.btn", { e: ext.toUpperCase(), s: MR.fmtBytes(f.size) })}</a>
+          ${others.length ? html`<p class="dl-more">${t("dl.more")}: ${others.map((x) => html`<a class="lnk" href="${x.url}" download="${x.filename}" rel="noopener noreferrer" data-act="file-dl" data-id="${p.id}">${x.filename} (${MR.fmtBytes(x.size)})</a>`)}</p>` : ""}
+        </div>
+        ${ext === "mrpack" ? html`<p class="note note-info">${icon("alert")} <span>${t("dl.mrpack")}</span></p>` : ""}
+        <p class="muted small">${icon("shield")} ${t("dl.note")}</p>`
+      : html`<div class="empty">${icon("search", "empty-i")}<h3>${t("mr.noVersions")}</h3><p>${t("mr.noVersionsP")}</p></div>`}
+      <div class="dlg-f"><button type="button" class="btn btn-ghost" data-act="close-dlg">${t("cancel")}</button>${extLink(p.source_url, t("dl.allOn"), "btn btn-sec")}</div>`);
+  };
+  // Assigned (not added) so reopening the dialog never stacks handlers.
+  d.onchange = (ev) => { const k = ev.target.dataset.dlv; if (!k) return; F[k] = ev.target.value; paint(); $(`[data-dlv="${k}"]`, d)?.focus(); };
   paint();
 }

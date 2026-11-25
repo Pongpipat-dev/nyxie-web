@@ -106,6 +106,8 @@ function footer() {
 // ---------- Detail mount: likes + comments ----------
 async function mountDetail(p) {
   recordView(p);
+  const ref = MRV.modrinthRef(p);
+  if (ref) MRV.mountVersions($("#main"), { id: ref }, p.id);
   try {
     const li = await likeInfo(p.id), btn = $("#like-btn");
     if (btn) { btn.dataset.mine = li.mine ? "1" : ""; btn.classList.toggle("on", li.mine); btn.setAttribute("aria-pressed", li.mine); btn.querySelector("span").textContent = li.mine ? t("liked") : t("like"); $("#like-n").textContent = li.count || ""; }
@@ -253,7 +255,9 @@ document.addEventListener("click", async (ev) => {
       openDialog(html`${dlgHead(t("filters"))}<div class="side side-dlg">${V.filtersPanel(type, V.readFilters(parse().q))}</div><div class="dlg-f"><button type="button" class="btn btn-pri btn-block" data-act="close-dlg">${t("showResults", { n: $("#results .count")?.textContent?.match(/\d+/)?.[0] ?? "" })}</button></div>`, { label: t("filters") });
       break;
     }
-    case "download": if (p) leaveDialog(p); break;
+    // Packs hosted on Modrinth download the file straight from its API; others go through the leave notice.
+    case "download": if (p) (MRV.modrinthRef(p) ? MRV.downloadDialog(p) : leaveDialog(p)); break;
+    case "file-dl": if (p) { recordDownload(p); if ($("#dlg").open) setTimeout(closeDialog, 50); } break;
     case "leave-go": if (p) { recordDownload(p); setTimeout(closeDialog, 50); } break;
     case "report": if (p) reportDialog(p); break;
     case "bookmark":

@@ -1,6 +1,7 @@
 import { html, raw, icon, thumb, fitOf, fitPill, scoreLabel, typeLabel, TYPES, md, esc } from "./ui.js";
 import { t, fmtDate, fmtDay, fmtNum, timeAgo, langName } from "./i18n.js";
 import { state, published, packBySlug, isAdmin } from "./store.js";
+import { modrinthRef } from "./mrviews.js";
 
 // ---------- Shared pieces ----------
 const href = (p) => `#/pack/${p.slug}`;
@@ -202,6 +203,7 @@ export function detail(slug) {
         ${p.before_url && p.after_url ? html`<section class="panel"><h2>${t("compare")}</h2>
           <div class="ba" style="--p:50%"><img src="${p.before_url}" alt="${t("before")}"><img class="ba-after" src="${p.after_url}" alt="${t("after")}"><input type="range" min="0" max="100" value="50" data-act="ba" aria-label="${t("compare")}"><span class="ba-l">${t("before")}</span><span class="ba-r">${t("after")}</span></div></section>` : ""}
         ${imgs.length ? html`<section class="panel"><h2>${t("gallery")}</h2><div class="gal" data-name="${p.name}">${imgs.map((u, i) => html`<a href="${u}" target="_blank" rel="noopener" data-lbi><img src="${u}" alt="${p.name} ${i + 1}" loading="lazy"></a>`)}</div></section>` : ""}
+        ${modrinthRef(p) ? html`<section class="panel" id="mr-versions" aria-live="polite"><h2>${t("mr.files")}</h2><div class="boot"><span class="spin" aria-hidden="true"></span></div></section>` : ""}
         <section class="panel"><h2>${t("testFacts")}</h2><dl class="facts facts-2">${facts.map(([k, v]) => html`<div><dt>${k}</dt><dd>${v}</dd></div>`)}</dl></section>
         ${p.description ? html`<section class="panel prose"><h2>${t("description")}</h2>${md(p.description)}</section>` : ""}
         ${p.install_steps ? html`<section class="panel prose"><h2>${t("install")}</h2>${md(p.install_steps)}</section>` : ""}
