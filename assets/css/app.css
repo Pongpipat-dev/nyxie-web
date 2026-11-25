@@ -285,7 +285,7 @@ main { flex: 1; width: 100%; max-width: var(--wrap); margin: 0 auto; padding: 28
 .det-act .dl-n { justify-content: center; gap: 4px; }
 .det-act .dl-n .ic { margin-left: 6px; }
 .det-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; }
-.det-main, .det-side { display: grid; gap: 16px; }
+.det-main, .det-side { display: grid; gap: 16px; min-width: 0; grid-template-columns: minmax(0, 1fr); } /* min-width 0: wide tables scroll inside their box instead of widening the column */
 .det-side { position: sticky; top: 84px; }
 .score-panel { display: grid; gap: 6px; }
 .score-big { display: flex; align-items: baseline; gap: 2px; }
