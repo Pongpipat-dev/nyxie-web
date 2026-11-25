@@ -1,6 +1,7 @@
 import { html, raw, icon, thumb, toast, scoreLabel, typeLabel, TYPES, $ } from "./ui.js";
 import { t, fmtDate, getLang, timeAgo } from "./i18n.js";
 import { sb, state, loadCatalog } from "./store.js";
+import * as MR from "./modrinth.js";
 
 // Admin UI copy (admins only; kept compact and bilingual).
 const A = (th, en) => (getLang() === "th" ? th : en);
@@ -150,9 +151,26 @@ async function packForm(id) {
   const isNew = id === "new";
   let p = isNew ? { type: packTypeOf("new") || "resource-packs", status: "draft", platform: "java", perf: "light", versions: [], images: [] } : state.packs.find((x) => String(x.id) === String(id));
   if (!p) return html`<p class="note note-bad">${t("notFound")}</p>`;
+  // #/admin/packs/new?modrinth=<slug> arrives from a project page on Explore Modrinth.
+  const hq = new URLSearchParams(location.hash.split("?")[1] || "");
+  const mrRef = isNew ? MR.parseRef(hq.get("modrinth")) : "";
+  let mrNote = "";
+  if (mrRef) {
+    try { const d = await MR.toPackDraft(mrRef, hq.get("as")); if (d) { p = { ...p, ...d }; mrNote = html`<p class="note note-info">${icon("check")} <span>${A(`กรอกข้อมูลจาก Modrinth แล้ว (${d.name}) ตรวจทาน ให้คะแนน และใส่วันที่ทดสอบก่อนเผยแพร่`, `Filled from Modrinth (${d.name}). Review it, add the score and test date before publishing.`)}</span></p>`; } }
+    catch (e) { mrNote = html`<p class="note note-bad">${t("mr.errT")}</p>`; }
+  }
+  const mrSrc = /modrinth\.com\//i.test(p.source_url || "") ? p.source_url : "";
   const back = isNew && !packTypeOf("new") ? packsHref() : packsHref(p.type);
   return html`<div class="adm-h"><h2>${isNew ? A("เพิ่มแพ็กใหม่", "New pack") : p.name}</h2><a class="lnk" href="${back}">${icon("left")} ${A("กลับไปรายการ", "Back to list")}</a></div>
+  ${mrNote}
   <form class="form adm-form" data-form="adm-pack" data-id="${isNew ? "" : p.id}">
+    <fieldset class="fg-box mr-import"><legend>${A("นำเข้าจาก Modrinth", "Import from Modrinth")}</legend>
+      <div class="mr-import-r">
+        ${field(A("ลิงก์หรือ slug ของโปรเจกต์", "Project link or slug"), html`<input id="mr-ref" value="${mrRef || mrSrc}" placeholder="https://modrinth.com/mod/sodium" autocomplete="off">`)}
+        <button type="button" class="btn btn-sec" data-adm="mr-fetch">${icon("download")} ${A("ดึงข้อมูล", "Fetch")}</button>
+      </div>
+      <small class="muted">${A("เติมชื่อ ผู้สร้าง คำอธิบาย เวอร์ชัน ไลเซนส์ ขนาดไฟล์ รูปปก และแกลเลอรีให้อัตโนมัติ คะแนนและผลทดสอบยังต้องใส่เอง", "Fills name, creator, description, versions, license, file size, icon and gallery. Score and test results stay yours to enter.")} <a class="lnk" href="#/modrinth">${A("ค้นหาใน Modrinth", "Search Modrinth")} ${icon("right")}</a></small>
+    </fieldset>
     <div class="fgrid">
       ${field(A("ชื่อแพ็ก", "Name"), html`<input name="name" value="${p.name || ""}" required maxlength="80">`)}
       ${field("Slug", html`<input name="slug" value="${p.slug || ""}" pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="${A("สร้างจากชื่ออัตโนมัติ", "auto from name")}">`, A("ใช้ในลิงก์ เช่น faithful-plus", "Used in the URL, e.g. faithful-plus"))}
@@ -263,6 +281,27 @@ async function usersTab() {
     <td>${u.id === state.user.id ? u.role : html`<select data-role="${u.id}" aria-label="${A("สิทธิ์", "Role")}">${["user", "admin"].map((r) => html`<option${u.role === r ? raw(" selected") : ""}>${r}</option>`)}</select>`}</td></tr>`)}</tbody></table></div>`;
 }
 
+// ---------- Modrinth import ----------
+async function fillFromModrinth(btn) {
+  const f = btn.closest("form"), ref = MR.parseRef($("#mr-ref")?.value);
+  if (!ref) { toast(A("ใส่ลิงก์ modrinth.com หรือ slug ของโปรเจกต์", "Enter a modrinth.com link or project slug"), "bad"); $("#mr-ref")?.focus(); return; }
+  const editing = !!f.dataset.id;
+  if (editing && !confirm(A("แทนที่ข้อมูลในฟอร์มด้วยข้อมูลจาก Modrinth? คะแนนและวันที่ทดสอบจะไม่ถูกแตะ", "Replace the form fields with Modrinth data? Score and test date are left alone."))) return;
+  btn.disabled = true;
+  try {
+    const d = await MR.toPackDraft($("#mr-ref").value, MR.typeFromUrl($("#mr-ref").value));
+    if (!d) { toast(A("ไม่พบโปรเจกต์นี้บน Modrinth", "No such project on Modrinth"), "bad"); return; }
+    for (const [k, v] of Object.entries(d)) {
+      const el = f.elements[k]; if (!el || v === "" || v == null) continue;
+      if (k === "slug" && editing) continue; // keep existing URLs stable
+      el.value = Array.isArray(v) ? v.join(k === "images" ? "\n" : ", ") : v;
+    }
+    const pv = $("#th-prev"); if (pv && d.thumbnail_url) pv.src = d.thumbnail_url;
+    toast(A(`ดึงข้อมูล ${d.name} แล้ว ตรวจทานก่อนบันทึก`, `Fetched ${d.name}. Review before saving.`));
+  } catch (e) { toast(t("mr.errT"), "bad"); }
+  finally { btn.disabled = false; }
+}
+
 // ---------- Behaviour ----------
 let bound = false;
 function mount() {
@@ -270,6 +309,7 @@ function mount() {
   document.addEventListener("click", async (ev) => {
     const b = ev.target.closest("[data-adm]"); if (!b) return;
     const id = +b.dataset.id, act = b.dataset.adm;
+    if (act === "mr-fetch") { await fillFromModrinth(b); return; }
     const run = async (q, msg) => { const { error } = await q; if (error) { toast(t("errGeneric"), "bad"); return false; } if (msg) toast(msg); return true; };
     if (act === "del-pack" && confirm(t("confirmDel")) && await run(sb.from("packs").delete().eq("id", id), A("ลบแล้ว", "Deleted"))) { await loadCatalog(); refresh(); }
     if (act === "resolve" && await run(sb.from("reports").update({ status: "resolved" }).eq("id", id))) refresh();

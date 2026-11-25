@@ -2,6 +2,7 @@ import { html, raw, icon, logo, $, $$, toast, openDialog, closeDialog, dlgHead, 
 import { t, getLang, setLang, langName, LANGS } from "./i18n.js";
 import { sb, state, boot, onChange, emit, isAdmin, saveSetup, published, packById, toggleBookmark, likeInfo, toggleLike, loadComments, recordView, recordDownload, loadCatalog } from "./store.js";
 import * as V from "./views.js";
+import * as MRV from "./mrviews.js";
 import { SOCIALS, CONTACT_EMAIL } from "./config.js";
 import "./lightbox.js";
 import { oauthButtons, startOAuth, restoreOAuthRoute } from "./oauth.js";
@@ -27,6 +28,7 @@ async function render() {
   else if (TYPES.includes(a)) view = V.list(a, V.readFilters(q));
   else if (a === "pack" && b) view = V.detail(b);
   else if (a === "search") view = V.search(q.get("q") || "");
+  else if (a === "modrinth") view = b ? MRV.projectPage(decodeURIComponent(b), q.get("as")) : MRV.explore(q);
   else if (a === "top") view = V.top10();
   else if (a === "tutorials") view = b ? V.tutorial(b) : V.tutorials();
   else if (a === "saved") view = V.saved();
@@ -50,14 +52,18 @@ async function render() {
 function rerenderKeepScroll() { const y = scrollY; render().then(() => scrollTo(0, y)); }
 
 // ---------- Header / footer ----------
+// Less-used types sit under "More" in the desktop header; the mobile drawer lists everything.
+const MORE = ["modpacks", "datapacks", "plugins"];
 function header() {
   const { parts } = parse(), cur = parts[0] || "";
   const u = state.user, pr = state.profile;
-  const nav = [...TYPES.map((ty) => [ty, typeLabel(ty)]), ["top", t("top10")], ["tutorials", t("tutorials")]];
+  const nav = [...TYPES.map((ty) => [ty, typeLabel(ty)]), ["top", t("top10")], ["tutorials", t("tutorials")], ["modrinth", "Modrinth"]];
   $("#top").innerHTML = String(html`
     <div class="top-in">
       <a class="brand" href="#/" aria-label="Nyxie home">${logo()}<span>Nyxie</span></a>
-      <nav class="nav" aria-label="Main">${nav.map(([k, l]) => html`<a href="#/${k}"${cur === k ? raw(' aria-current="page"') : ""}>${l}</a>`)}</nav>
+      <nav class="nav" aria-label="Main">${nav.filter(([k]) => !MORE.includes(k)).map(([k, l]) => html`<a href="#/${k}"${cur === k ? raw(' aria-current="page"') : ""}>${l}</a>`)}
+        <div class="menu-w nav-more"><button type="button" class="nav-more-b${MORE.includes(cur) ? " on" : ""}" data-act="navmore" aria-haspopup="menu" aria-expanded="false">${t("more")} ${icon("chevron")}</button>
+          <div class="menu" role="menu" hidden>${MORE.map((k) => html`<a role="menuitem" href="#/${k}"${cur === k ? raw(' aria-current="page"') : ""}>${typeLabel(k)}</a>`)}</div></div></nav>
       <form class="hsearch" role="search" data-form="search" autocomplete="off">
         ${icon("search")}<input name="q" type="search" placeholder="${t("searchShort")}" aria-label="${t("searchBtn")}" aria-controls="hs-pop" aria-expanded="false" data-hsearch><kbd aria-hidden="true">/</kbd>
         <div class="hs-pop" id="hs-pop" role="listbox" hidden></div>
@@ -239,6 +245,7 @@ document.addEventListener("click", async (ev) => {
     case "lang": langDialog(); break;
     case "set-lang": { const l = el.dataset.l; closeDialog(); if (l !== getLang()) { await setLang(l); footer(); rerenderKeepScroll(); } break; }
     case "usermenu": { const m = el.nextElementSibling; m.hidden = !m.hidden; el.setAttribute("aria-expanded", !m.hidden); if (!m.hidden) m.querySelector("a,button")?.focus(); break; }
+    case "navmore": { const m = el.nextElementSibling; m.hidden = !m.hidden; el.setAttribute("aria-expanded", !m.hidden); if (!m.hidden) m.querySelector("a")?.focus(); break; }
     case "drawer": { const d = $(".drawer"); d.hidden = !d.hidden; el.setAttribute("aria-expanded", !d.hidden); break; }
     case "filters": {
       const side = $("#filters"); if (!side) break;
