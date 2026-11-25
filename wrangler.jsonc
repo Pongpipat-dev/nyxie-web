@@ -1,0 +1,16 @@
+// Cloudflare Workers static assets. Build first: SITE_URL=<url> node scripts/build.mjs
+// then deploy: npx wrangler deploy
+{
+  "name": "nyxie",
+  "compatibility_date": "2026-11-23",
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./dist",
+    // Prerendered pages live at dist/<route>/index.html and canonical URLs have no trailing slash.
+    "html_handling": "drop-trailing-slash",
+    // Unknown paths get dist/404.html with a 404 status; dist/_redirects sends browser-only
+    // routes (search, admin, account…) to the app shell.
+    "not_found_handling": "404-page"
+  }
+}

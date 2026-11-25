@@ -105,8 +105,9 @@ for (const pg of pages) page("/p/" + pg.slug, { title: pg.title, description: cl
 
 // Fallback for routes that only exist in the browser (search, Modrinth explore, account, admin).
 fs.writeFileSync(path.join(OUT, "404.html"), shell.replace("<title>", '<meta name="robots" content="noindex">\n<title>'));
-// Netlify and Cloudflare Pages: serve the app for those routes with a 200.
-fs.writeFileSync(path.join(OUT, "_redirects"), ["/search", "/search/*", "/modrinth", "/modrinth/*", "/saved", "/account", "/admin", "/admin/*"].map((r) => `${r} /index.html 200`).join("\n") + "\n");
+// Netlify and Cloudflare (Pages or Workers static assets): serve the app shell for those routes
+// with a 200. The target is "/" because Cloudflare redirects /index.html to / and rejects the loop.
+fs.writeFileSync(path.join(OUT, "_redirects"), ["/search", "/search/*", "/modrinth", "/modrinth/*", "/saved", "/account", "/admin", "/admin/*"].map((r) => `${r} / 200`).join("\n") + "\n");
 
 fs.writeFileSync(path.join(OUT, "robots.txt"), `User-agent: *\nDisallow: /admin\nDisallow: /account\nDisallow: /saved\n\nSitemap: ${BASE}/sitemap.xml\n`);
 fs.writeFileSync(path.join(OUT, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemap.map((s) =>

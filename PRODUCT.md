@@ -12,7 +12,7 @@ web
 - `node scripts/build.mjs` (with `SITE_URL`) writes `dist/`: a prerendered HTML file per public page, `sitemap.xml`, `robots.txt`, `404.html` and `_redirects`. Packs without a team review (score or test date plus the review text), empty tutorials and browser-only routes (search, Modrinth, account, admin) are noindex.
 - **Supabase** (project `nyxie`, ref `tztoxyryicyupucgrigr`, region ap-southeast-1, free plan) handles auth (email and password), the Postgres data with row-level security, and the `pack-images` storage bucket.
 - `supabase-js` loads from the jsDelivr CDN at a pinned version.
-- Hosting target not decided.
+- Hosted on **Cloudflare Workers static assets** (`wrangler.jsonc`, worker `nyxie`): `SITE_URL=https://nyxie.web-nyxie.workers.dev node scripts/build.mjs` then `npx wrangler deploy`. Supabase Auth must list the live URL as Site URL and redirect URL.
 
 ## Users
 
