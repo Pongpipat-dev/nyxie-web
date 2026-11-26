@@ -1,6 +1,6 @@
 export default {
   skip: "Langsung ke konten",
-  "type1.resource-packs": "Resource pack", "type1.shaders": "Shader", "type1.mods": "Mod", "type1.maps": "World",
+  "type1.resource-packs": "Resource pack", "type1.shaders": "Shader", "type1.mods": "Mod",
   top10: "Populer", tutorials: "Tutorial", saved: "Tersimpan", account: "Akun", admin: "Admin",
   searchPh: "Cari pack, shader, mod, map, atau tutorial", searchBtn: "Cari", searchAll: "Lihat semua hasil untuk “{q}”",
   signIn: "Masuk", signUp: "Daftar", signOut: "Keluar", menu: "Menu", close: "Tutup",

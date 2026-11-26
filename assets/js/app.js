@@ -82,18 +82,14 @@ async function render() {
 function rerenderKeepScroll() { const y = scrollY; render().then(() => scrollTo(0, y)); }
 
 // ---------- Header / footer ----------
-// Less-used types sit under "More" in the desktop header; the mobile drawer lists everything.
-const MORE = ["modpacks", "datapacks", "plugins"];
 function header() {
   const { parts } = parse(), cur = parts[0] || "";
   const u = state.user, pr = state.profile;
-  const nav = [...TYPES.filter((ty) => ty !== "maps").map((ty) => [ty, typeLabel(ty)]), ["top", t("top10")], ["tutorials", t("tutorials")]];
+  const nav = [...TYPES.map((ty) => [ty, typeLabel(ty)]), ["top", t("top10")], ["tutorials", t("tutorials")]];
   $("#top").innerHTML = String(html`
     <div class="top-in">
       <a class="brand" href="/" aria-label="Nyxie home">${logo()}<span>Nyxie</span></a>
-      <nav class="nav" aria-label="Main">${nav.filter(([k]) => !MORE.includes(k)).map(([k, l]) => html`<a href="/${k}"${cur === k ? raw(' aria-current="page"') : ""}>${l}</a>`)}
-        <div class="menu-w nav-more"><button type="button" class="nav-more-b${MORE.includes(cur) ? " on" : ""}" data-act="navmore" aria-haspopup="menu" aria-expanded="false">${t("more")} ${icon("chevron")}</button>
-          <div class="menu" role="menu" hidden>${MORE.map((k) => html`<a role="menuitem" href="/${k}"${cur === k ? raw(' aria-current="page"') : ""}>${typeLabel(k)}</a>`)}</div></div></nav>
+      <nav class="nav" aria-label="Main">${nav.map(([k, l]) => html`<a href="/${k}"${cur === k ? raw(' aria-current="page"') : ""}>${l}</a>`)}</nav>
       <form class="hsearch" role="search" data-form="search" autocomplete="off">
         ${icon("search")}<input name="q" type="search" placeholder="${t("searchShort")}" aria-label="${t("searchBtn")}" aria-controls="hs-pop" aria-expanded="false" data-hsearch><kbd aria-hidden="true">/</kbd>
         <div class="hs-pop" id="hs-pop" role="listbox" hidden></div>
@@ -278,7 +274,6 @@ document.addEventListener("click", async (ev) => {
     case "lang": langDialog(); break;
     case "set-lang": { const l = el.dataset.l; closeDialog(); if (l !== getLang()) { await setLang(l); footer(); rerenderKeepScroll(); } break; }
     case "usermenu": { const m = el.nextElementSibling; m.hidden = !m.hidden; el.setAttribute("aria-expanded", !m.hidden); if (!m.hidden) m.querySelector("a,button")?.focus(); break; }
-    case "navmore": { const m = el.nextElementSibling; m.hidden = !m.hidden; el.setAttribute("aria-expanded", !m.hidden); if (!m.hidden) m.querySelector("a")?.focus(); break; }
     case "drawer": { const d = $(".drawer"); d.hidden = !d.hidden; el.setAttribute("aria-expanded", !d.hidden); break; }
     case "filters": {
       const side = $("#filters"); if (!side) break;

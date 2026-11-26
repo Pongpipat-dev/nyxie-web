@@ -1,6 +1,6 @@
 export default {
   skip: "Przejdź do treści",
-  "type1.resource-packs": "Paczka zasobów", "type1.shaders": "Shader", "type1.mods": "Mod", "type1.maps": "Świat",
+  "type1.resource-packs": "Paczka zasobów", "type1.shaders": "Shader", "type1.mods": "Mod",
   top10: "Popularne", tutorials: "Poradniki", saved: "Zapisane", account: "Konto", admin: "Admin",
   searchPh: "Szukaj paczek, shaderów, modów, map lub poradników", searchBtn: "Szukaj", searchAll: "Zobacz wszystkie wyniki dla „{q}”",
   signIn: "Zaloguj się", signUp: "Zarejestruj się", signOut: "Wyloguj się", menu: "Menu", close: "Zamknij",

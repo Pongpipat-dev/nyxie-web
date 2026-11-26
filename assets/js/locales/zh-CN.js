@@ -1,6 +1,6 @@
 export default {
   skip: "跳到正文",
-  "type1.resource-packs": "资源包", "type1.shaders": "光影", "type1.mods": "模组", "type1.maps": "世界",
+  "type1.resource-packs": "资源包", "type1.shaders": "光影", "type1.mods": "模组",
   top10: "热门", tutorials: "安装教程", saved: "已收藏", account: "账号", admin: "管理",
   searchPh: "搜索资源包、光影、模组、地图或教程", searchBtn: "搜索", searchAll: "查看“{q}”的全部结果",
   signIn: "登录", signUp: "注册", signOut: "退出登录", menu: "菜单", close: "关闭",

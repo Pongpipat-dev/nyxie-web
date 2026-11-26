@@ -2,10 +2,10 @@
 const S = {
   th: {
     skip: "ข้ามไปยังเนื้อหา",
-    "type.resource-packs": "Resource Packs", "type.shaders": "Shaders", "type.mods": "Mods", "type.modpacks": "Modpacks", "type.datapacks": "Data Packs", "type.plugins": "Plugins", "type.maps": "Worlds",
-    "type1.resource-packs": "รีซอร์สแพ็ก", "type1.shaders": "Shader", "type1.mods": "ม็อด", "type1.modpacks": "โมดแพ็ก", "type1.datapacks": "ดาต้าแพ็ก", "type1.plugins": "ปลั๊กอิน", "type1.maps": "เวิลด์",
+    "type.resource-packs": "Resource Packs", "type.shaders": "Shaders", "type.mods": "Mods",
+    "type1.resource-packs": "รีซอร์สแพ็ก", "type1.shaders": "Shader", "type1.mods": "ม็อด",
     top10: "ยอดนิยม", tutorials: "สอนติดตั้ง", saved: "ที่บันทึกไว้", account: "บัญชี", admin: "แอดมิน",
-    searchPh: "ค้นหาแพ็ก Shader ม็อด เวิลด์ หรือบทสอน", searchBtn: "ค้นหา", searchAll: "ดูผลทั้งหมดของ “{q}”",
+    searchPh: "ค้นหาแพ็ก Shader ม็อด หรือบทสอน", searchBtn: "ค้นหา", searchAll: "ดูผลทั้งหมดของ “{q}”",
     signIn: "เข้าสู่ระบบ", signUp: "สมัครสมาชิก", signOut: "ออกจากระบบ", menu: "เมนู", close: "ปิด",
     themeDark: "ธีมมืด", themeLight: "ธีมสว่าง", lang: "English",
     // setup
@@ -70,7 +70,7 @@ const S = {
     "page.about": "เกี่ยวกับ Nyxie", "page.contact": "ติดต่อเรา", "page.privacy": "นโยบายความเป็นส่วนตัว", "page.cookies": "นโยบายคุกกี้", "page.terms": "ข้อกำหนดการใช้งาน", "page.download-safety": "ความปลอดภัยในการดาวน์โหลด",
     pageEmpty: "เนื้อหาหน้านี้ยังไม่ได้เขียน", infoNav: "หน้าข้อมูล", updatedOn: "อัปเดตล่าสุด {d}", legal: "ข้อกฎหมาย", checkFit: "เช็กกับเครื่อง", checkedLbl: "ตรวจ", searchShort: "ค้นหาใน Nyxie",
     // Modrinth explore
-    more: "เพิ่มเติม", show: "แสดง", perPage: "จำนวนรายการต่อหน้า", "dl.title": "ดาวน์โหลด {n}", "dl.latest": "ล่าสุด (ทุกเวอร์ชัน)", "dl.btn": "ดาวน์โหลดไฟล์ {e} · {s}", "dl.more": "ไฟล์อื่นในเวอร์ชันนี้", "dl.allOn": "ทุกเวอร์ชันบน Modrinth", "dl.note": "ไฟล์โหลดตรงจาก cdn.modrinth.com ของผู้สร้าง Nyxie ไม่ได้เก็บหรือแก้ไขไฟล์ ควรสแกนไฟล์ก่อนเปิด", "dl.mrpack": "ไฟล์ .mrpack เป็นโมดแพ็ก ต้องเปิดผ่าน launcher ที่รองรับ เช่น Modrinth App, Prism Launcher หรือ ATLauncher", untested: "ยังไม่ได้ทดสอบ", untestedTip: "นำเข้าจาก Modrinth ทีม Nyxie ยังไม่ได้ทดสอบและให้คะแนน ความหนักเครื่องเป็นค่าประมาณจากแท็กของผู้สร้าง", "mr.title": "สำรวจ Modrinth", "mr.lead": "ค้นหาม็อด โมดแพ็ก รีซอร์สแพ็ก Shader ดาต้าแพ็ก และปลั๊กอินแบบสดจาก Modrinth",
+    show: "แสดง", perPage: "จำนวนรายการต่อหน้า", "dl.title": "ดาวน์โหลด {n}", "dl.latest": "ล่าสุด (ทุกเวอร์ชัน)", "dl.btn": "ดาวน์โหลดไฟล์ {e} · {s}", "dl.more": "ไฟล์อื่นในเวอร์ชันนี้", "dl.allOn": "ทุกเวอร์ชันบน Modrinth", "dl.note": "ไฟล์โหลดตรงจาก cdn.modrinth.com ของผู้สร้าง Nyxie ไม่ได้เก็บหรือแก้ไขไฟล์ ควรสแกนไฟล์ก่อนเปิด", "dl.mrpack": "ไฟล์ .mrpack เป็นโมดแพ็ก ต้องเปิดผ่าน launcher ที่รองรับ เช่น Modrinth App, Prism Launcher หรือ ATLauncher", untested: "ยังไม่ได้ทดสอบ", untestedTip: "นำเข้าจาก Modrinth ทีม Nyxie ยังไม่ได้ทดสอบและให้คะแนน ความหนักเครื่องเป็นค่าประมาณจากแท็กของผู้สร้าง", "mr.title": "สำรวจ Modrinth", "mr.lead": "ค้นหาม็อด โมดแพ็ก รีซอร์สแพ็ก Shader ดาต้าแพ็ก และปลั๊กอินแบบสดจาก Modrinth",
     "mr.notTested": "ข้อมูลส่วนนี้ดึงสดจาก Modrinth ทีม Nyxie ยังไม่ได้ทดสอบ ยกเว้นรายการที่มีป้าย “Nyxie ทดสอบแล้ว”",
     "mr.tested": "Nyxie ทดสอบแล้ว", "mr.testedTip": "ทีม Nyxie รีวิวโปรเจกต์นี้แล้ว คลิกเพื่ออ่านผลทดสอบ",
     "mr.types": "ประเภทโปรเจกต์", "mr.type.mod": "ม็อด", "mr.type.modpack": "โมดแพ็ก", "mr.type.resourcepack": "รีซอร์สแพ็ก", "mr.type.shader": "Shader", "mr.type.datapack": "ดาต้าแพ็ก", "mr.type.plugin": "ปลั๊กอิน",
@@ -87,10 +87,10 @@ const S = {
   },
   en: {
     skip: "Skip to content",
-    "type.resource-packs": "Resource Packs", "type.shaders": "Shaders", "type.mods": "Mods", "type.modpacks": "Modpacks", "type.datapacks": "Data Packs", "type.plugins": "Plugins", "type.maps": "Worlds",
-    "type1.resource-packs": "Resource pack", "type1.shaders": "Shader", "type1.mods": "Mod", "type1.modpacks": "Modpack", "type1.datapacks": "Data pack", "type1.plugins": "Plugin", "type1.maps": "World",
+    "type.resource-packs": "Resource Packs", "type.shaders": "Shaders", "type.mods": "Mods",
+    "type1.resource-packs": "Resource pack", "type1.shaders": "Shader", "type1.mods": "Mod",
     top10: "Popular", tutorials: "Tutorials", saved: "Saved", account: "Account", admin: "Admin",
-    searchPh: "Search packs, shaders, mods, worlds or tutorials", searchBtn: "Search", searchAll: "See all results for “{q}”",
+    searchPh: "Search packs, shaders, mods or tutorials", searchBtn: "Search", searchAll: "See all results for “{q}”",
     signIn: "Sign in", signUp: "Sign up", signOut: "Sign out", menu: "Menu", close: "Close",
     themeDark: "Dark theme", themeLight: "Light theme", lang: "ภาษาไทย",
     setup: "My setup", setupSet: "Set my setup", setupEdit: "Edit",
@@ -145,7 +145,7 @@ const S = {
     "page.about": "About Nyxie", "page.contact": "Contact", "page.privacy": "Privacy Policy", "page.cookies": "Cookie Policy", "page.terms": "Terms of Service", "page.download-safety": "Download Safety",
     pageEmpty: "This page hasn't been written yet.", infoNav: "Information pages", updatedOn: "Last updated {d}", legal: "Legal", checkFit: "Check fit", checkedLbl: "Checked", searchShort: "Search Nyxie",
     // Modrinth explore
-    more: "More", show: "Show", perPage: "Results per page", "dl.title": "Download {n}", "dl.latest": "Latest (any version)", "dl.btn": "Download {e} file · {s}", "dl.more": "Other files in this version", "dl.allOn": "All versions on Modrinth", "dl.note": "The file comes straight from the creator's upload on cdn.modrinth.com. Nyxie doesn't host or change it. Scan files before opening them.", "dl.mrpack": "A .mrpack file is a modpack. Open it with a launcher that supports it, such as the Modrinth App, Prism Launcher or ATLauncher.", untested: "Not tested yet", untestedTip: "Imported from Modrinth. The Nyxie team hasn't tested or scored it yet; the performance weight is an estimate from the creator's tags.", "mr.title": "Explore Modrinth", "mr.lead": "Search mods, modpacks, resource packs, shaders, data packs and plugins live from Modrinth.",
+    show: "Show", perPage: "Results per page", "dl.title": "Download {n}", "dl.latest": "Latest (any version)", "dl.btn": "Download {e} file · {s}", "dl.more": "Other files in this version", "dl.allOn": "All versions on Modrinth", "dl.note": "The file comes straight from the creator's upload on cdn.modrinth.com. Nyxie doesn't host or change it. Scan files before opening them.", "dl.mrpack": "A .mrpack file is a modpack. Open it with a launcher that supports it, such as the Modrinth App, Prism Launcher or ATLauncher.", untested: "Not tested yet", untestedTip: "Imported from Modrinth. The Nyxie team hasn't tested or scored it yet; the performance weight is an estimate from the creator's tags.", "mr.title": "Explore Modrinth", "mr.lead": "Search mods, modpacks, resource packs, shaders, data packs and plugins live from Modrinth.",
     "mr.notTested": "This section is live data from Modrinth. The Nyxie team hasn't tested these, except items marked “Tested by Nyxie”.",
     "mr.tested": "Tested by Nyxie", "mr.testedTip": "The Nyxie team has reviewed this project. Click to read the test results.",
     "mr.types": "Project types", "mr.type.mod": "Mods", "mr.type.modpack": "Modpacks", "mr.type.resourcepack": "Resource packs", "mr.type.shader": "Shaders", "mr.type.datapack": "Data packs", "mr.type.plugin": "Plugins",

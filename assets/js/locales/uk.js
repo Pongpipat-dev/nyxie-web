@@ -1,6 +1,6 @@
 export default {
   skip: "Перейти до вмісту",
-  "type1.resource-packs": "Ресурспак", "type1.shaders": "Шейдер", "type1.mods": "Мод", "type1.maps": "Світ",
+  "type1.resource-packs": "Ресурспак", "type1.shaders": "Шейдер", "type1.mods": "Мод",
   top10: "Популярне", tutorials: "Інструкції", saved: "Збережене", account: "Обліковий запис", admin: "Адмін",
   searchPh: "Шукайте ресурспаки, шейдери, моди, мапи чи інструкції", searchBtn: "Шукати", searchAll: "Усі результати за запитом «{q}»",
   signIn: "Увійти", signUp: "Зареєструватися", signOut: "Вийти", menu: "Меню", close: "Закрити",

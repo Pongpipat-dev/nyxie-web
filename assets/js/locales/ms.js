@@ -1,6 +1,6 @@
 export default {
   skip: "Langkau ke kandungan",
-  "type1.resource-packs": "Pek sumber", "type1.shaders": "Shader", "type1.mods": "Mod", "type1.maps": "Dunia",
+  "type1.resource-packs": "Pek sumber", "type1.shaders": "Shader", "type1.mods": "Mod",
   top10: "Popular", tutorials: "Tutorial", saved: "Disimpan", account: "Akaun", admin: "Pentadbir",
   searchPh: "Cari pek, shader, mod, peta atau tutorial", searchBtn: "Cari", searchAll: "Lihat semua hasil untuk “{q}”",
   signIn: "Log masuk", signUp: "Daftar", signOut: "Log keluar", menu: "Menu", close: "Tutup",

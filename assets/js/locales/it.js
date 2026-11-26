@@ -1,6 +1,6 @@
 export default {
   skip: "Vai al contenuto",
-  "type1.resource-packs": "Resource pack", "type1.shaders": "Shader", "type1.mods": "Mod", "type1.maps": "Mondo",
+  "type1.resource-packs": "Resource pack", "type1.shaders": "Shader", "type1.mods": "Mod",
   top10: "Popolari", tutorials: "Tutorial", saved: "Salvati", account: "Account", admin: "Admin",
   searchPh: "Cerca pack, shader, mod, mappe o tutorial", searchBtn: "Cerca", searchAll: "Vedi tutti i risultati per “{q}”",
   signIn: "Accedi", signUp: "Registrati", signOut: "Esci", menu: "Menu", close: "Chiudi",

@@ -1,6 +1,6 @@
 export default {
   skip: "Ugrás a tartalomhoz",
-  "type1.resource-packs": "Erőforráscsomag", "type1.shaders": "Shader", "type1.mods": "Mod", "type1.maps": "Világ",
+  "type1.resource-packs": "Erőforráscsomag", "type1.shaders": "Shader", "type1.mods": "Mod",
   top10: "Népszerű", tutorials: "Útmutatók", saved: "Mentettek", account: "Fiók", admin: "Admin",
   searchPh: "Csomagok, shaderek, modok, pályák vagy útmutatók keresése", searchBtn: "Keresés", searchAll: "Az összes találat erre: „{q}”",
   signIn: "Bejelentkezés", signUp: "Regisztráció", signOut: "Kijelentkezés", menu: "Menü", close: "Bezárás",

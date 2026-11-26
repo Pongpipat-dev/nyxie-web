@@ -1,6 +1,6 @@
 export default {
   skip: "Chuyển đến nội dung",
-  "type1.resource-packs": "Gói tài nguyên", "type1.shaders": "Shader", "type1.mods": "Mod", "type1.maps": "Thế giới",
+  "type1.resource-packs": "Gói tài nguyên", "type1.shaders": "Shader", "type1.mods": "Mod",
   top10: "Phổ biến", tutorials: "Hướng dẫn", saved: "Đã lưu", account: "Tài khoản", admin: "Quản trị",
   searchPh: "Tìm gói, shader, mod, bản đồ hoặc hướng dẫn", searchBtn: "Tìm", searchAll: "Xem tất cả kết quả cho “{q}”",
   signIn: "Đăng nhập", signUp: "Đăng ký", signOut: "Đăng xuất", menu: "Menu", close: "Đóng",

@@ -1,6 +1,6 @@
 export default {
   skip: "Přejít na obsah",
-  "type1.resource-packs": "Resource pack", "type1.shaders": "Shader", "type1.mods": "Mód", "type1.maps": "Svět",
+  "type1.resource-packs": "Resource pack", "type1.shaders": "Shader", "type1.mods": "Mód",
   top10: "Populární", tutorials: "Návody", saved: "Uložené", account: "Účet", admin: "Admin",
   searchPh: "Hledat balíčky, shadery, módy, mapy nebo návody", searchBtn: "Hledat", searchAll: "Zobrazit všechny výsledky pro „{q}“",
   signIn: "Přihlásit se", signUp: "Registrovat se", signOut: "Odhlásit se", menu: "Menu", close: "Zavřít",

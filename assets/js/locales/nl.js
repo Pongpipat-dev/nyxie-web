@@ -1,6 +1,6 @@
 export default {
   skip: "Naar inhoud",
-  "type1.resource-packs": "Resourcepack", "type1.shaders": "Shader", "type1.mods": "Mod", "type1.maps": "Wereld",
+  "type1.resource-packs": "Resourcepack", "type1.shaders": "Shader", "type1.mods": "Mod",
   top10: "Populair", tutorials: "Handleidingen", saved: "Opgeslagen", account: "Account", admin: "Beheer",
   searchPh: "Zoek packs, shaders, mods, maps of handleidingen", searchBtn: "Zoeken", searchAll: "Alle resultaten voor ‘{q}’ bekijken",
   signIn: "Inloggen", signUp: "Registreren", signOut: "Uitloggen", menu: "Menu", close: "Sluiten",

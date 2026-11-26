@@ -54,10 +54,6 @@ const PAL = {
   "resource-packs": [[104, 170, 78], [126, 186, 92], [121, 85, 58], [99, 69, 46], [140, 101, 70]],
   shaders: [[255, 196, 120], [250, 150, 110], [110, 120, 200], [70, 80, 150], [40, 50, 100]],
   mods: [[120, 124, 130], [100, 104, 110], [140, 144, 150], [90, 200, 220], [230, 90, 80]],
-  modpacks: [[150, 108, 66], [126, 90, 54], [170, 126, 80], [90, 200, 220], [230, 90, 80]],
-  datapacks: [[196, 126, 70], [176, 108, 58], [214, 146, 88], [96, 200, 170], [70, 170, 150]],
-  plugins: [[52, 64, 84], [44, 54, 72], [62, 76, 98], [96, 210, 120], [90, 160, 240]],
-  maps: [[60, 130, 210], [80, 150, 225], [214, 196, 140], [96, 168, 80], [70, 140, 64]],
 };
 // Resource-pack block faces: grass, snow, sand, planks, stone bricks, cherry
 const RP = [
@@ -81,8 +77,7 @@ export function thumb(p) {
     let c;
     if (p.type === "resource-packs") { const v = RP[variant]; c = v.top && y < v.top + (r() < 0.3 ? 1 : 0) ? v.a[r() < 0.5 ? 0 : 1] : v.b[Math.floor(r() * v.b.length)]; }
     else if (p.type === "shaders") { const band = Math.min(4, Math.floor((y / N) * 5 + r() * 0.6)); c = pal[band]; if (Math.hypot(x - 11, y - 5) < 2.6) c = [255, 236, 180]; }
-    else if (p.type === "mods" || p.type === "modpacks" || p.type === "datapacks" || p.type === "plugins") { c = pal[Math.floor(r() * 3)]; if (r() < 0.07) c = pal[3 + Math.floor(r() * 2)]; }
-    else { const d = Math.hypot(x - 8 + Math.sin(y) * 1.5, y - 8); c = d < 3.8 ? pal[3 + (r() < 0.5 ? 0 : 1)] : d < 5 ? pal[2] : pal[r() < 0.5 ? 0 : 1]; }
+    else { c = pal[Math.floor(r() * 3)]; if (r() < 0.07) c = pal[3 + Math.floor(r() * 2)]; }
     o += `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${rgb(c, j)}"/>`;
   }
   const url = "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${N} ${N}" shape-rendering="crispEdges">${o}</svg>`);
@@ -162,7 +157,7 @@ export function perPage(q) {
 export function savePerPage(n) { try { localStorage.setItem("nyxie.per", String(n)); } catch (e) {} }
 export const perPicker = (n) => html`<div class="per" role="group" aria-label="${t("perPage")}"><span>${t("show")}</span>${PER_OPTIONS.map((x) => html`<button type="button" class="per-b" data-per="${x}" aria-pressed="${x === n}">${x}</button>`)}</div>`;
 
-export const TYPES = ["resource-packs", "shaders", "mods", "modpacks", "datapacks", "plugins", "maps"];
+export const TYPES = ["resource-packs", "shaders", "mods"];
 
 // Minimal, safe markdown: escapes first, then ## headings, lists, bold, links, paragraphs.
 export function md(src) {

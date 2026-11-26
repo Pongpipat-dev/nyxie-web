@@ -1,6 +1,6 @@
 export default {
   skip: "Lumaktaw sa nilalaman",
-  "type1.resource-packs": "Resource pack", "type1.shaders": "Shader", "type1.mods": "Mod", "type1.maps": "World",
+  "type1.resource-packs": "Resource pack", "type1.shaders": "Shader", "type1.mods": "Mod",
   top10: "Sikat", tutorials: "Mga gabay", saved: "Naka-save", account: "Account", admin: "Admin",
   searchPh: "Maghanap ng pack, shader, mod, map o gabay", searchBtn: "Maghanap", searchAll: "Tingnan lahat ng resulta para sa “{q}”",
   signIn: "Mag-sign in", signUp: "Mag-sign up", signOut: "Mag-sign out", menu: "Menu", close: "Isara",

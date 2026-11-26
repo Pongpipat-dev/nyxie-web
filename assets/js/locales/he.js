@@ -1,6 +1,6 @@
 export default {
   skip: "דילוג לתוכן",
-  "type1.resource-packs": "חבילת משאבים", "type1.shaders": "שיידר", "type1.mods": "מוד", "type1.maps": "עולם",
+  "type1.resource-packs": "חבילת משאבים", "type1.shaders": "שיידר", "type1.mods": "מוד",
   top10: "פופולרי", tutorials: "מדריכים", saved: "שמורים", account: "חשבון", admin: "ניהול",
   searchPh: "חיפוש חבילות, שיידרים, מודים, מפות או מדריכים", searchBtn: "חיפוש", searchAll: "כל התוצאות עבור „{q}”",
   signIn: "התחברות", signUp: "הרשמה", signOut: "התנתקות", menu: "תפריט", close: "סגירה",

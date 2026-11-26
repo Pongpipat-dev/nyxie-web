@@ -1,6 +1,6 @@
 export default {
   skip: "Salt la conținut",
-  "type1.resource-packs": "Pachet de resurse", "type1.shaders": "Shader", "type1.mods": "Mod", "type1.maps": "Lume",
+  "type1.resource-packs": "Pachet de resurse", "type1.shaders": "Shader", "type1.mods": "Mod",
   top10: "Populare", tutorials: "Tutoriale", saved: "Salvate", account: "Cont", admin: "Admin",
   searchPh: "Caută pachete, shadere, moduri, hărți sau tutoriale", searchBtn: "Caută", searchAll: "Vezi toate rezultatele pentru „{q}”",
   signIn: "Conectează-te", signUp: "Înregistrează-te", signOut: "Deconectează-te", menu: "Meniu", close: "Închide",

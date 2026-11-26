@@ -1,6 +1,6 @@
 export default {
   skip: "본문으로 건너뛰기",
-  "type1.resource-packs": "리소스 팩", "type1.shaders": "셰이더", "type1.mods": "모드", "type1.maps": "월드",
+  "type1.resource-packs": "리소스 팩", "type1.shaders": "셰이더", "type1.mods": "모드",
   top10: "인기", tutorials: "설치 가이드", saved: "저장됨", account: "계정", admin: "관리자",
   searchPh: "팩, 셰이더, 모드, 맵 또는 가이드 검색", searchBtn: "검색", searchAll: "“{q}” 검색 결과 모두 보기",
   signIn: "로그인", signUp: "회원가입", signOut: "로그아웃", menu: "메뉴", close: "닫기",

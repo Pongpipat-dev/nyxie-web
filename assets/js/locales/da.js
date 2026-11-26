@@ -1,6 +1,6 @@
 export default {
   skip: "Gå til indhold",
-  "type1.resource-packs": "Ressourcepakke", "type1.shaders": "Shader", "type1.mods": "Mod", "type1.maps": "Verden",
+  "type1.resource-packs": "Ressourcepakke", "type1.shaders": "Shader", "type1.mods": "Mod",
   top10: "Populære", tutorials: "Vejledninger", saved: "Gemt", account: "Konto", admin: "Admin",
   searchPh: "Søg efter pakker, shaders, mods, kort eller vejledninger", searchBtn: "Søg", searchAll: "Se alle resultater for “{q}”",
   signIn: "Log ind", signUp: "Opret konto", signOut: "Log ud", menu: "Menu", close: "Luk",

@@ -1,6 +1,6 @@
 export default {
   skip: "İçeriğe geç",
-  "type1.resource-packs": "Kaynak paketi", "type1.shaders": "Shader", "type1.mods": "Mod", "type1.maps": "Dünya",
+  "type1.resource-packs": "Kaynak paketi", "type1.shaders": "Shader", "type1.mods": "Mod",
   top10: "Popüler", tutorials: "Rehberler", saved: "Kaydedilenler", account: "Hesap", admin: "Yönetici",
   searchPh: "Paket, shader, mod, harita veya rehber ara", searchBtn: "Ara", searchAll: "“{q}” için tüm sonuçları gör",
   signIn: "Giriş yap", signUp: "Kayıt ol", signOut: "Çıkış yap", menu: "Menü", close: "Kapat",

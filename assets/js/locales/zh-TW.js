@@ -1,6 +1,6 @@
 export default {
   skip: "跳到主要內容",
-  "type1.resource-packs": "資源包", "type1.shaders": "光影", "type1.mods": "模組", "type1.maps": "世界",
+  "type1.resource-packs": "資源包", "type1.shaders": "光影", "type1.mods": "模組",
   top10: "熱門", tutorials: "安裝教學", saved: "已收藏", account: "帳號", admin: "管理",
   searchPh: "搜尋資源包、光影、模組、地圖或教學", searchBtn: "搜尋", searchAll: "查看「{q}」的所有結果",
   signIn: "登入", signUp: "註冊", signOut: "登出", menu: "選單", close: "關閉",

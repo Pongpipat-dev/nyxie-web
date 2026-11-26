@@ -1,6 +1,6 @@
 export default {
   skip: "Siirry sisältöön",
-  "type1.resource-packs": "Resurssipaketti", "type1.shaders": "Shader", "type1.mods": "Modi", "type1.maps": "Maailma",
+  "type1.resource-packs": "Resurssipaketti", "type1.shaders": "Shader", "type1.mods": "Modi",
   top10: "Suositut", tutorials: "Ohjeet", saved: "Tallennetut", account: "Tili", admin: "Ylläpito",
   searchPh: "Hae paketteja, shadereita, modeja, karttoja tai ohjeita", searchBtn: "Hae", searchAll: "Näytä kaikki tulokset haulle ”{q}”",
   signIn: "Kirjaudu sisään", signUp: "Rekisteröidy", signOut: "Kirjaudu ulos", menu: "Valikko", close: "Sulje",

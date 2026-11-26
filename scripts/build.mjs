@@ -68,7 +68,7 @@ function page(route, { title, description, body, noindex = false, image, lastmod
 const link = (href, label) => html`<a href="${href}">${label}</a>`;
 const packList = (a) => a.length ? html`<ul>${a.map((p) => html`<li>${link("/pack/" + p.slug, p.name)}${p.summary ? html` · ${p.summary}` : ""}</li>`)}</ul>` : "";
 const nav = html`<nav aria-label="Main"><ul>${TYPES.map((ty) => html`<li>${link("/" + ty, typeLabel(ty))}</li>`)}<li>${link("/top", t("top10"))}</li><li>${link("/tutorials", t("tutorials"))}</li></ul></nav>`;
-const DESC = "Nyxie: Minecraft resource packs, shaders, mods and maps, tested by our team and checked against your setup. Java and Bedrock.";
+const DESC = "Nyxie: Minecraft resource packs, shaders and mods, tested by our team and checked against your setup. Java and Bedrock.";
 
 // ---------- Pages ----------
 page("/", { description: DESC, body: html`<h1>Nyxie</h1><p>${DESC}</p>${nav}<h2>${t("topRated")}</h2>${packList(packs.filter(indexable).slice(0, 12))}` });

@@ -1,6 +1,6 @@
 export default {
   skip: "本文へスキップ",
-  "type1.resource-packs": "リソースパック", "type1.shaders": "シェーダー", "type1.mods": "Mod", "type1.maps": "ワールド",
+  "type1.resource-packs": "リソースパック", "type1.shaders": "シェーダー", "type1.mods": "Mod",
   top10: "人気", tutorials: "導入ガイド", saved: "保存済み", account: "アカウント", admin: "管理",
   searchPh: "パック、シェーダー、Mod、マップ、ガイドを検索", searchBtn: "検索", searchAll: "「{q}」の検索結果をすべて表示",
   signIn: "ログイン", signUp: "新規登録", signOut: "ログアウト", menu: "メニュー", close: "閉じる",

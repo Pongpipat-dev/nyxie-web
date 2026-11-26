@@ -32,11 +32,11 @@ const qs = (o) => Object.entries(o).filter(([, v]) => v != null && v !== "").map
 
 // ---------- Project types ----------
 // Modrinth project_type -> URL segment on modrinth.com
-export const MR_TYPES = ["mod", "modpack", "resourcepack", "shader", "datapack", "plugin"];
-// Modrinth type -> Nyxie pack type.
-export const toNyxieType = (ty) => ({ resourcepack: "resource-packs", shader: "shaders", modpack: "modpacks", datapack: "datapacks", plugin: "plugins" }[ty] || "mods");
+export const MR_TYPES = ["mod", "resourcepack", "shader"];
+// Modrinth type -> Nyxie pack type. Types Nyxie does not list (modpacks, plugins...) import as mods.
+export const toNyxieType = (ty) => ({ resourcepack: "resource-packs", shader: "shaders" }[ty] || "mods");
 // Nyxie pack type -> Modrinth type, for "find this on Modrinth" links.
-export const fromNyxieType = (ty) => ({ "resource-packs": "resourcepack", shaders: "shader", mods: "mod", modpacks: "modpack", datapacks: "datapack", plugins: "plugin", maps: "datapack" }[ty] || "mod");
+export const fromNyxieType = (ty) => ({ "resource-packs": "resourcepack", shaders: "shader", mods: "mod" }[ty] || "mod");
 export const projectUrl = (p) => `${SITE}/${p.project_type || "project"}/${p.slug || p.id || p.project_id}`;
 
 // ---------- Search ----------

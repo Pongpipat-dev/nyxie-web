@@ -1,6 +1,6 @@
 export default {
   skip: "Pređi na sadržaj",
-  "type1.resource-packs": "Resource pack", "type1.shaders": "Šejder", "type1.mods": "Mod", "type1.maps": "Svet",
+  "type1.resource-packs": "Resource pack", "type1.shaders": "Šejder", "type1.mods": "Mod",
   top10: "Popularno", tutorials: "Uputstva", saved: "Sačuvano", account: "Nalog", admin: "Admin",
   searchPh: "Pretraži pakete, šejdere, modove, mape ili uputstva", searchBtn: "Pretraži", searchAll: "Prikaži sve rezultate za „{q}“",
   signIn: "Prijavi se", signUp: "Registruj se", signOut: "Odjavi se", menu: "Meni", close: "Zatvori",

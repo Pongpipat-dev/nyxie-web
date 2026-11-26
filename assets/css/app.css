@@ -488,7 +488,7 @@ main { flex: 1; width: 100%; max-width: var(--wrap); margin: 0 auto; padding: 28
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1180px) {
-  .nav a, .nav-more-b { padding: 7px 6px; font-size: 14.5px; }
+  .nav a { padding: 7px 6px; font-size: 14.5px; }
   .hsearch { max-width: 280px; }
   .setup-chip span { max-width: 130px; }
 }
@@ -650,13 +650,6 @@ main { flex: 1; width: 100%; max-width: var(--wrap); margin: 0 auto; padding: 28
 @media (max-width: 640px) { .res-bar { flex-wrap: wrap; } .res-r { width: 100%; justify-content: space-between; } }
 .mr-import-r { display: flex; gap: 8px; align-items: end; }
 .mr-import-r .fl { flex: 1; }
-.nav-more { display: flex; }
-.nav-more-b { display: inline-flex; align-items: center; gap: 4px; padding: 7px 8px; border: 0; border-radius: var(--r-sm); background: none; color: var(--muted); font-weight: 600; font-size: 15px; white-space: nowrap; cursor: pointer; }
-.nav-more-b .ic { width: 15px; height: 15px; }
-.nav-more-b:hover, .nav-more-b[aria-expanded="true"] { color: var(--text); background: var(--panel); }
-.nav-more-b.on { color: var(--text); background: var(--panel-2); }
-.nav-more .menu { left: 0; right: auto; min-width: 180px; }
-.nav-more .menu a[aria-current] { color: var(--accent-text); }
 .types .type-l { flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px 16px; }
 .types .type-l span, .types .type-l small { white-space: nowrap; }
 /* Header: larger text leaves the search box less room; keep it usable. */
