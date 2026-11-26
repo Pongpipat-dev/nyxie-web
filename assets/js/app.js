@@ -87,7 +87,7 @@ const MORE = ["modpacks", "datapacks", "plugins"];
 function header() {
   const { parts } = parse(), cur = parts[0] || "";
   const u = state.user, pr = state.profile;
-  const nav = [...TYPES.map((ty) => [ty, typeLabel(ty)]), ["top", t("top10")], ["tutorials", t("tutorials")], ["modrinth", "Modrinth"]];
+  const nav = [...TYPES.filter((ty) => ty !== "maps").map((ty) => [ty, typeLabel(ty)]), ["top", t("top10")], ["tutorials", t("tutorials")]];
   $("#top").innerHTML = String(html`
     <div class="top-in">
       <a class="brand" href="/" aria-label="Nyxie home">${logo()}<span>Nyxie</span></a>
