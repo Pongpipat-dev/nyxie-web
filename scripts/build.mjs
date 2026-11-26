@@ -33,7 +33,7 @@ async function rest(q) {
 const [packs, tutorials, pages] = await Promise.all([
   rest("packs?select=slug,name,type,summary,description,creator,license,versions,platform,perf,resolution,requirements,score,checked_at,updated_at,is_sample,thumbnail_url,review,pros,cons,test_rig,test_setup,fps_base,fps_with&status=eq.published&order=score.desc.nullslast,name"),
   rest("tutorials?select=slug,title,summary,body,updated_at&published=eq.true&order=id"),
-  rest("pages?select=slug,title,body,updated_at"),
+  rest("pages?select=slug,title,body,title_en,body_en,updated_at"),
 ]);
 // reviewed(): tested (score or test date) and written up by the team in its own words.
 const indexable = (p) => !p.is_sample && (reviewed(p) || INDEX_UNTESTED);
@@ -100,8 +100,14 @@ for (const p of packs) {
 page("/tutorials", { title: t("tutorialsT"), description: t("tutorialsP"), body: html`<h1>${t("tutorialsT")}</h1><ul>${tutorials.map((x) => html`<li>${link("/tutorials/" + x.slug, x.title)} · ${x.summary}</li>`)}</ul>` });
 for (const x of tutorials) page("/tutorials/" + x.slug, { title: x.title, description: x.summary, lastmod: x.updated_at, noindex: !x.body?.trim(),
   body: html`<article class="article prose"><h1>${x.title}</h1><p class="lead">${x.summary}</p>${md(x.body)}</article>` });
-for (const pg of pages) page("/p/" + pg.slug, { title: pg.title, description: clip(pg.body?.replace(/[#*`>\-\[\]()]/g, " ")), lastmod: pg.updated_at,
-  body: html`<article class="article prose"><h1>${pg.title}</h1>${md(pg.body)}</article>` });
+// Info pages: the Thai version, then the English one, so crawlers see both.
+for (const pg of pages) {
+  const th = { title: pg.title?.trim(), body: pg.body?.trim() }, en = { title: pg.title_en?.trim(), body: pg.body_en?.trim() };
+  const main = th.body ? th : en;
+  page("/p/" + pg.slug, { title: main.title || en.title, description: clip((main.body || "").replace(/[#*`>\-\[\]()]/g, " ")), lastmod: pg.updated_at, noindex: !th.body && !en.body,
+    body: html`<article class="article prose"><h1>${main.title || en.title}</h1>${md(main.body)}
+      ${main === th && en.body ? html`<section lang="en"><h2>${en.title || "English"}</h2>${md(en.body)}</section>` : ""}</article>` });
+}
 
 // Fallback for routes that only exist in the browser (search, Modrinth explore, account, admin).
 fs.writeFileSync(path.join(OUT, "404.html"), shell.replace("<title>", '<meta name="robots" content="noindex">\n<title>'));

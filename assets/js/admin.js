@@ -277,8 +277,17 @@ async function pagesTab(slug) {
   return html`<div class="adm-h"><h2>${A("หน้าข้อมูล", "Pages")}</h2></div>
   <nav class="seg-nav">${PAGE_SLUGS.map((s) => html`<a href="/admin/pages/${s}"${s === slug ? raw(' aria-current="page"') : ""}>${t("page." + s)}</a>`)}</nav>
   <form class="form adm-form" data-form="adm-page" data-slug="${slug}">
-    ${field(A("หัวข้อ", "Title"), html`<input name="title" value="${pg.title}" required>`)}
-    ${field(A("เนื้อหา", "Body"), html`<textarea name="body" rows="16">${pg.body}</textarea>`)}
+    <p class="small muted">${A("เขียน ## หัวข้อ (ขึ้นในสารบัญด้านข้าง), - รายการ, 1. ขั้นตอน, **ตัวหนา**, [ลิงก์](https://…) และ > กล่องข้อความเน้น วันที่อัปเดตล่าสุดแสดงให้อัตโนมัติ ไม่ต้องพิมพ์เอง", "Use ## headings (listed in the side contents), - lists, 1. steps, **bold**, [links](https://…) and > for a highlighted note. The last-updated date is shown automatically.")}</p>
+    <div class="fgrid fgrid-lang">
+      <fieldset class="fg-box"><legend>ภาษาไทย</legend>
+        ${field(A("หัวข้อ", "Title"), html`<input name="title" value="${pg.title}" required>`)}
+        ${field(A("เนื้อหา", "Body"), html`<textarea name="body" rows="22">${pg.body}</textarea>`)}
+      </fieldset>
+      <fieldset class="fg-box"><legend>English</legend>
+        ${field(A("หัวข้อ", "Title"), html`<input name="title_en" value="${pg.title_en || ""}">`)}
+        ${field(A("เนื้อหา", "Body"), html`<textarea name="body_en" rows="22">${pg.body_en || ""}</textarea>`, A("เว้นว่างได้ หน้าจะใช้ภาษาไทยแทน", "Optional. The Thai version is shown when empty."))}
+      </fieldset>
+    </div>
     <div class="form-bar"><a class="btn btn-ghost" href="/p/${slug}" target="_blank">${icon("eye")} ${A("ดูหน้า", "View page")}</a><button class="btn btn-pri">${t("save")}</button></div>
   </form>`;
 }
@@ -381,7 +390,7 @@ export async function onSubmit(kind, f, fd) {
     await loadCatalog(); toast(t("saved_")); go("/admin/tutorials");
   }
   if (kind === "adm-page") {
-    const { error } = await sb.from("pages").upsert({ slug: f.dataset.slug, title: s("title"), body: String(fd.get("body") || "") });
+    const { error } = await sb.from("pages").upsert({ slug: f.dataset.slug, title: s("title"), body: String(fd.get("body") || ""), title_en: s("title_en"), body_en: String(fd.get("body_en") || "") });
     if (error) { toast(error.message, "bad"); return; }
     toast(t("saved_"));
   }

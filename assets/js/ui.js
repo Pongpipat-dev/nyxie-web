@@ -171,11 +171,14 @@ export function md(src) {
   const inline = (s) => s
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\[([^\]]+)\]\((\/[^\s)]*)\)/g, '<a href="$2">$1</a>'); // same-site link, opens in place
   const flush = () => { if (list) { out += `</${list}>`; list = null; } };
   for (const l of lines) {
     let m;
     if ((m = l.match(/^#{2,3}\s+(.*)/))) { flush(); out += `<h3>${inline(m[1])}</h3>`; }
+    // "> " lines become one highlighted note (esc() has turned ">" into "&gt;").
+    else if ((m = l.match(/^\s*&gt;\s?(.*)/))) { if (list !== "blockquote") { flush(); out += '<blockquote class="note-box">'; list = "blockquote"; } if (m[1].trim()) out += `<p>${inline(m[1])}</p>`; }
     else if ((m = l.match(/^\s*[-*]\s+(.*)/))) { if (list !== "ul") { flush(); out += "<ul>"; list = "ul"; } out += `<li>${inline(m[1])}</li>`; }
     else if ((m = l.match(/^\s*\d+[.)]\s+(.*)/))) { if (list !== "ol") { flush(); out += "<ol>"; list = "ol"; } out += `<li>${inline(m[1])}</li>`; }
     else if (!l.trim()) flush();

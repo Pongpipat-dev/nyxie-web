@@ -1,5 +1,6 @@
 import { html, raw, icon, thumb, fitOf, fitPill, scoreLabel, typeLabel, TYPES, md, esc, perPage, perPicker, reviewBlock } from "./ui.js";
-import { t, fmtDate, fmtDay, fmtNum, timeAgo, langName } from "./i18n.js";
+import { t, fmtDate, fmtDay, fmtNum, timeAgo, langName, getLang } from "./i18n.js";
+import { CONTACT_EMAIL, SOCIALS } from "./config.js";
 import { state, published, packBySlug, isAdmin } from "./store.js";
 import { modrinthRef } from "./mrviews.js";
 
@@ -304,9 +305,39 @@ export function gate() {
 export function notFound() {
   return { notFound: true, title: t("notFound"), body: html`<div class="empty">${icon("search", "empty-i")}<h3>${t("notFound")}</h3><p>${t("notFoundP")}</p><a class="btn btn-sec" href="/">${t("home")}</a></div>` };
 }
+// Info pages hold a Thai version (title/body) and an English one (title_en/body_en).
+// Thai UI shows Thai first; every other UI language shows English first. Either falls back to the other.
+export const INFO_GROUPS = [["Nyxie", ["about", "contact", "download-safety"]], ["legal", ["privacy", "cookies", "terms"]]];
+export function pageText(page, th = getLang() === "th") {
+  const pick = (a, b) => (th ? a || b : b || a);
+  return { title: pick(page?.title?.trim(), page?.title_en?.trim()), body: pick(page?.body?.trim(), page?.body_en?.trim()) };
+}
+// Markdown with numbered ids on each section heading, plus the list of headings for the contents.
+export function sectioned(body) {
+  const toc = [];
+  const doc = String(md(body)).replace(/<h3>(.*?)<\/h3>/g, (m, h) => { toc.push(h); return `<h3 id="s-${toc.length}">${h}</h3>`; });
+  return { doc: raw(doc), toc };
+}
 export function infoPage(slug, page) {
-  const title = page?.title || t("page." + slug);
-  return { title, body: html`<article class="article prose"><h1>${title}</h1>${page?.body ? md(page.body) : html`<p class="muted">${t("pageEmpty")}</p>`}</article>` };
+  const { title: tt, body } = pageText(page);
+  const title = tt || t("page." + slug);
+  const { doc, toc } = body ? sectioned(body) : { doc: "", toc: [] };
+  const nav = html`<nav class="info-nav" aria-label="${t("infoNav")}">${INFO_GROUPS.map(([g, slugs]) => html`
+    <p class="info-g">${g === "legal" ? t("legal") : g}</p>
+    <ul>${slugs.map((s) => html`<li><a href="/p/${s}"${s === slug ? raw(' aria-current="page"') : ""}>${t("page." + s)}</a>
+      ${s === slug && toc.length > 2 ? html`<ol class="info-toc">${toc.map((h, i) => html`<li><a href="#s-${i + 1}">${raw(h)}</a></li>`)}</ol>` : ""}</li>`)}</ul>`)}</nav>`;
+  const contact = slug === "contact" ? html`<div class="contact-card">
+      <a class="btn btn-pri btn-lg" href="mailto:${CONTACT_EMAIL}">${icon("chat")} ${CONTACT_EMAIL}</a>
+      <ul class="socials-l">${SOCIALS.map(([n, u]) => html`<li><a class="btn btn-sec" href="${u}" target="_blank" rel="noopener">${n} ${icon("external")}</a></li>`)}</ul>
+    </div>` : "";
+  return { title, body: html`<div class="info">
+    <aside class="info-side">${nav}</aside>
+    <article class="article prose info-doc">
+      <h1>${title}</h1>
+      ${body && page?.updated_at ? html`<p class="info-meta">${t("updatedOn", { d: fmtDate(page.updated_at) })}</p>` : ""}
+      ${contact}
+      ${body ? doc : html`<p class="muted">${t("pageEmpty")}</p>`}
+    </article></div>` };
 }
 export function account() {
   if (!state.user) return gate();
