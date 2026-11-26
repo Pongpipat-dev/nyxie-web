@@ -11,10 +11,7 @@ const TABS = [
   ["reports", () => A("รายงานปัญหา", "Reports"), "flag"],
   ["comments", () => A("ความคิดเห็น", "Comments"), "chat"],
   ["tutorials", () => A("บทสอน", "Tutorials"), "book"],
-  ["pages", () => A("หน้าข้อมูล", "Pages"), "edit"],
-  ["users", () => A("ผู้ใช้", "Users"), "user"],
 ];
-const PAGE_SLUGS = ["about", "contact", "privacy", "cookies", "terms", "download-safety"];
 const slugify = (s) => String(s).toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/[\s_]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "item-" + Date.now();
 const go = (h) => { history.pushState(null, "", h); window.dispatchEvent(new Event("nyxie:route")); };
 
@@ -48,8 +45,6 @@ export async function adminView(tab = "dashboard", sub) {
   else if (tab === "reports") body = await reportsTab();
   else if (tab === "comments") body = await commentsTab();
   else if (tab === "tutorials") body = sub ? tutorialForm(sub) : tutorialsTab();
-  else if (tab === "pages") body = await pagesTab(sub || "about");
-  else if (tab === "users") body = await usersTab();
   else body = await dashboardTab(openReports || 0);
   return { title: t("admin"), body: shell(tab, body, counts, sub), mount };
 }
@@ -75,7 +70,7 @@ async function dashboardTab(openReports) {
   const sum = (arr, k) => arr.reduce((s, p) => s + (+p[k] || 0), 0);
   const downloads = sum(packs, "downloads"), views = sum(packs, "views");
 
-  const tile = (label, value, sub, href) => html`<a class="kpi" href="${href}"><span class="kpi-l">${label}</span><b class="kpi-v">${num(value)}</b>${sub ? html`<span class="kpi-s">${sub}</span>` : ""}</a>`;
+  const tile = (label, value, sub, href) => { const inner = html`<span class="kpi-l">${label}</span><b class="kpi-v">${num(value)}</b>${sub ? html`<span class="kpi-s">${sub}</span>` : ""}`; return href ? html`<a class="kpi" href="${href}">${inner}</a>` : html`<div class="kpi">${inner}</div>`; };
 
   // Downloads per type: one series, one hue, bars share a single scale.
   const byType = TYPES.map((ty) => { const ps = packs.filter((p) => p.type === ty); return { ty, n: ps.length, dl: sum(ps, "downloads") }; });
@@ -95,7 +90,7 @@ async function dashboardTab(openReports) {
     ${tile(A("แพ็กที่เผยแพร่", "Published packs"), pub.length, A(`ฉบับร่าง ${packs.length - pub.length}`, `${packs.length - pub.length} draft${packs.length - pub.length === 1 ? "" : "s"}`), "/admin/packs")}
     ${tile(A("ดาวน์โหลดรวม", "Total downloads"), downloads, A("ไปหน้าผู้สร้าง", "to creator pages"), "/admin/packs")}
     ${tile(A("ยอดดูรวม", "Total views"), views, A("หน้ารายละเอียดแพ็ก", "pack detail pages"), "/admin/packs")}
-    ${tile(A("ผู้ใช้", "Users"), users, A(`+${num(usersNew)} คนใน 7 วันที่ผ่านมา`, `+${num(usersNew)} in the last 7 days`), "/admin/users")}
+    ${tile(A("ผู้ใช้", "Users"), users, A(`+${num(usersNew)} คนใน 7 วันที่ผ่านมา`, `+${num(usersNew)} in the last 7 days`))}
     ${tile(A("ความคิดเห็น", "Comments"), comments, A(`+${num(commentsNew)} ใน 7 วันที่ผ่านมา`, `+${num(commentsNew)} in the last 7 days`), "/admin/comments")}
     ${tile(A("ถูกใจ", "Likes"), likes, "", "/admin/packs")}
   </div>
@@ -269,39 +264,6 @@ function tutorialForm(id) {
   </form>`;
 }
 
-// ---------- Pages ----------
-async function pagesTab(slug) {
-  if (!PAGE_SLUGS.includes(slug)) slug = "about";
-  const { data } = await sb.from("pages").select("*").eq("slug", slug).maybeSingle();
-  const pg = data || { slug, title: t("page." + slug), body: "" };
-  return html`<div class="adm-h"><h2>${A("หน้าข้อมูล", "Pages")}</h2></div>
-  <nav class="seg-nav">${PAGE_SLUGS.map((s) => html`<a href="/admin/pages/${s}"${s === slug ? raw(' aria-current="page"') : ""}>${t("page." + s)}</a>`)}</nav>
-  <form class="form adm-form" data-form="adm-page" data-slug="${slug}">
-    <p class="small muted">${A("เขียน ## หัวข้อ (ขึ้นในสารบัญด้านข้าง), - รายการ, 1. ขั้นตอน, **ตัวหนา**, [ลิงก์](https://…) และ > กล่องข้อความเน้น วันที่อัปเดตล่าสุดแสดงให้อัตโนมัติ ไม่ต้องพิมพ์เอง", "Use ## headings (listed in the side contents), - lists, 1. steps, **bold**, [links](https://…) and > for a highlighted note. The last-updated date is shown automatically.")}</p>
-    <div class="fgrid fgrid-lang">
-      <fieldset class="fg-box"><legend>ภาษาไทย</legend>
-        ${field(A("หัวข้อ", "Title"), html`<input name="title" value="${pg.title}" required>`)}
-        ${field(A("เนื้อหา", "Body"), html`<textarea name="body" rows="22">${pg.body}</textarea>`)}
-      </fieldset>
-      <fieldset class="fg-box"><legend>English</legend>
-        ${field(A("หัวข้อ", "Title"), html`<input name="title_en" value="${pg.title_en || ""}">`)}
-        ${field(A("เนื้อหา", "Body"), html`<textarea name="body_en" rows="22">${pg.body_en || ""}</textarea>`, A("เว้นว่างได้ หน้าจะใช้ภาษาไทยแทน", "Optional. The Thai version is shown when empty."))}
-      </fieldset>
-    </div>
-    <div class="form-bar"><a class="btn btn-ghost" href="/p/${slug}" target="_blank">${icon("eye")} ${A("ดูหน้า", "View page")}</a><button class="btn btn-pri">${t("save")}</button></div>
-  </form>`;
-}
-
-// ---------- Users ----------
-async function usersTab() {
-  const { data, error } = await sb.from("profiles").select("id,display_name,role,created_at").order("created_at", { ascending: false }).limit(500);
-  if (error) return html`<p class="note note-bad">${t("errLoad")}</p>`;
-  return html`<div class="adm-h"><h2>${A("ผู้ใช้", "Users")} <span class="count-b">${data.length}</span></h2></div>
-  <div class="tbl-w"><table class="tbl"><thead><tr><th>${t("displayName")}</th><th>${A("สมัครเมื่อ", "Joined")}</th><th>${A("สิทธิ์", "Role")}</th></tr></thead>
-  <tbody>${data.map((u) => html`<tr><td>${u.display_name || "—"}${u.id === state.user.id ? html` <span class="badge">${A("คุณ", "you")}</span>` : ""}</td><td>${fmtDate(u.created_at)}</td>
-    <td>${u.id === state.user.id ? u.role : html`<select data-role="${u.id}" aria-label="${A("สิทธิ์", "Role")}">${["user", "admin"].map((r) => html`<option${u.role === r ? raw(" selected") : ""}>${r}</option>`)}</select>`}</td></tr>`)}</tbody></table></div>`;
-}
-
 // ---------- Modrinth import ----------
 async function fillFromModrinth(btn) {
   const f = btn.closest("form"), ref = MR.parseRef($("#mr-ref")?.value);
@@ -340,10 +302,6 @@ function mount() {
   });
   document.addEventListener("change", async (ev) => {
     const el = ev.target;
-    if (el.dataset.role) {
-      const { error } = await sb.from("profiles").update({ role: el.value }).eq("id", el.dataset.role);
-      toast(error ? t("errGeneric") : t("saved_"), error ? "bad" : "ok");
-    }
     if (el.dataset.upload) {
       const f = el.files?.[0]; if (!f) return;
       if (f.size > 3 * 1024 * 1024) { toast(A("ไฟล์ใหญ่เกิน 3 MB", "File is larger than 3 MB"), "bad"); return; }
@@ -388,10 +346,5 @@ export async function onSubmit(kind, f, fd) {
     const { error } = id ? await sb.from("tutorials").update(row).eq("id", +id) : await sb.from("tutorials").insert(row);
     if (error) { toast(error.code === "23505" ? A("Slug นี้ถูกใช้แล้ว", "That slug is already used") : error.message, "bad"); return; }
     await loadCatalog(); toast(t("saved_")); go("/admin/tutorials");
-  }
-  if (kind === "adm-page") {
-    const { error } = await sb.from("pages").upsert({ slug: f.dataset.slug, title: s("title"), body: String(fd.get("body") || ""), title_en: s("title_en"), body_en: String(fd.get("body_en") || "") });
-    if (error) { toast(error.message, "bad"); return; }
-    toast(t("saved_"));
   }
 }

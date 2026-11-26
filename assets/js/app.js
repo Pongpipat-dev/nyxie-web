@@ -413,7 +413,7 @@ document.addEventListener("submit", async (ev) => {
       const { error } = await sb.auth.updateUser({ password: String(fd.get("pw")) });
       if (error) return err(error.message); f.reset(); toast(t("pwChanged"));
     }
-    else if (adminMod && adminMod.onSubmit) { await adminMod.onSubmit(kind, f, fd); if (kind === "adm-page") pagesCache.delete(f.dataset.slug); }
+    else if (adminMod && adminMod.onSubmit) { await adminMod.onSubmit(kind, f, fd); }
   } catch (e) { console.error(e); err(t("errGeneric")); }
   finally { busy(false); }
 });
